@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Create Student Account' if mode=='register' else 'Student Sign In' }} - AI Course Tutor{% endblock %}
+{% block header %}{% endblock %}
+
+{% block body %}
+<div class="center" style="padding: 30px 16px;">
+  <div class="auth-card-wrapper">
+    
+    <!-- Top breadcrumb / navigation -->
+    <div class="auth-nav-bar">
+      <a href="/" class="auth-back-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <span>Back to Portal Selection</span>
+      </a>
+      <a href="/teacher/login" class="auth-switch-link">
+        <span>Faculty Portal</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+    </div>
+
+    <div class="auth">
+      <!-- Header -->
+      <div class="auth-header">
+        <div class="auth-logo-box">
+          <img src="{{ url_for('static', filename=logo) }}" alt="Shaqra University">
+        </div>
+        <h1>Student Portal</h1>
+        <p>College of Pharmacy &middot; Shaqra University</p>
+      </div>
+
+      <!-- Tabs: Login vs Register -->
+      <div class="tabs">
+        <a href="/login" class="{{ 'on' if mode=='login' }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+          Student Sign In
+        </a>
+        <a href="/register" class="{{ 'on' if mode=='register' }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+          New Registration
+        </a>
+      </div>
+
+      {% if err %}
+      <div class="err">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        {{ err }}
+      </div>
+      {% endif %}
+
+      <form method="post" autocomplete="on">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        
+        {% if mode=='register' %}
+        <div>
+          <label>Full Name</label>
+          <input name="name" required minlength="3" maxlength="80" placeholder="e.g. Fahad Al-Harbi" value="{{ request.form.name }}">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label>Student ID</label>
+            <input name="student_id" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_\-]{3,20}" placeholder="e.g. 44109876" value="{{ request.form.student_id }}">
+          </div>
+          <div>
+            <label>Batch (Academic Year)</label>
+            <select name="batch" required>
+              {% for b in batches %}
+              <option {{ 'selected' if request.form.batch==b }}>{{ b }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label>University Email</label>
+          <input name="email" type="email" required maxlength="120" placeholder="student@su.edu.sa" value="{{ request.form.email }}">
+        </div>
+
+        <div>
+          <label>Campus Section</label>
+          <select name="gender">
+            <option value="">Select section (Optional)</option>
+            <option value="male" {{ 'selected' if request.form.gender=='male' }}>Male Campus Section</option>
+            <option value="female" {{ 'selected' if request.form.gender=='female' }}>Female Campus Section</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Password</label>
+          <input name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="Create a secure password">
+          <div class="hint">Minimum 8 characters, letters and numbers.</div>
+        </div>
+
+        <div>
+          <label>Confirm Password</label>
+          <input name="password2" type="password" required minlength="8" autocomplete="new-password" placeholder="Repeat your password">
+        </div>
+
+        <button class="btn lg" style="width:100%;margin-top:20px">
+          <span>Complete Student Registration</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+
+        {% else %}
+
+        <div>
+          <label>Student ID or University Email</label>
+          <input name="identifier" required maxlength="120" placeholder="Enter your student ID or email" value="{{ request.form.identifier }}" autofocus>
+        </div>
+
+        <div>
+          <label>Password</label>
+          <input name="password" type="password" required placeholder="Enter your password">
+        </div>
+
+        <button class="btn lg" style="width:100%;margin-top:20px">
+          <span>Sign In to Learning Portal</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+
+        {% endif %}
+      </form>
+
+      <div class="integrity-notice">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <div>
+          <b>Academic Integrity Policy:</b> Answers are strictly retrieved from official course lecture slides. Activity is securely monitored by course faculty.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

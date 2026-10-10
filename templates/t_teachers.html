@@ -1,0 +1,111 @@
+{% extends "tbase.html" %}
+{% block title %}Teacher Accounts Management (Admin) - Shaqra University{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  
+  <div class="page-head">
+    <div class="page-title-box">
+      <h1>Faculty &amp; Instructor Accounts</h1>
+      <p class="muted">Provision accounts for other faculty members or teaching assistants. The primary Super Admin account retains exclusive administrative authority over courses and accounts.</p>
+    </div>
+  </div>
+
+  <div class="grid g2" style="align-items:start">
+    
+    <!-- Create Teacher Account Form -->
+    <div class="card">
+      <div class="card-head">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+          Provision Instructor Account
+        </h3>
+        <span class="pill good">Super Admin</span>
+      </div>
+      <p class="subtext" style="margin-bottom:18px">
+        Create credentials for a fellow instructor. They will be able to inspect student progress, review analytics, upload materials to the knowledge base, and inspect student feedback.
+      </p>
+
+      <form method="post">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+
+        <div>
+          <label>Instructor Full Name</label>
+          <input name="name" required placeholder="e.g. Dr. Ahmed Al-Otaibi" value="{{ request.form.name }}" maxlength="60">
+        </div>
+
+        <div>
+          <label>Username (Login ID)</label>
+          <input name="username" required placeholder="e.g. aotaibi" value="{{ request.form.username }}" maxlength="40" autocomplete="off">
+          <div class="hint">Alphanumeric username for faculty portal login.</div>
+        </div>
+
+        <div>
+          <label>Temporary Password</label>
+          <input type="password" name="password" required placeholder="Create initial password" minlength="8" autocomplete="new-password">
+          <div class="hint">Minimum 8 characters with letters and numbers. The instructor can change this in Settings.</div>
+        </div>
+
+        <button type="submit" class="btn lg" style="width:100%;margin-top:20px">
+          <span>Create Faculty Account</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Existing Teachers List -->
+    <div class="card">
+      <div class="card-head">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          Active Faculty Members ({{ teachers|length }})
+        </h3>
+        <span class="subtext">Shaqra University</span>
+      </div>
+
+      <div class="teacher-manage-list">
+        {% for t in teachers %}
+        <div class="teacher-manage-item">
+          <div class="teacher-manage-info">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span class="user-avatar-small">{{ t.name[:1]|upper }}</span>
+              <span class="teacher-name-label">{{ t.name }}</span>
+              {% if t.is_admin %}
+              <span class="pill good" style="font-size:11px">Super Admin</span>
+              {% else %}
+              <span class="pill navy" style="font-size:11px">Faculty Instructor</span>
+              {% endif %}
+            </div>
+            <div class="subtext" style="font-size:12px;margin-left:36px">
+              Username: <code>{{ t.username }}</code> &middot; Updated: {{ t.updated_at[:10] if t.updated_at else 'Active' }}
+            </div>
+          </div>
+
+          <div class="teacher-manage-actions">
+            {% if t.is_admin %}
+            <span class="pill muted" style="font-size:11px;font-style:italic">Protected Account</span>
+            {% else %}
+            <form action="/teacher/teachers/{{ t.id }}/delete" method="post" onsubmit="return confirm('Remove instructor account \'{{ t.username }}\'?');" style="margin:0;display:inline">
+              <input type="hidden" name="csrf" value="{{ csrf }}">
+              <button type="submit" class="btn alt sm danger-hover" title="Remove instructor account">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                Remove
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="kb-info-callout" style="margin-top:20px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <span><strong>Super Admin Policy:</strong> Only the primary super administrator can manage faculty accounts and add new courses. Standard instructors cannot delete accounts or alter system privileges.</span>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

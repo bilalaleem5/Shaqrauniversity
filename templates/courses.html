@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}My Courses - AI Course Tutor{% endblock %}
+
+{% block nav %}
+<div class="header-user">
+  <a class="btn alt sm" href="/feedback" title="Submit feedback or report issues">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="12" cy="11" r="1"></circle><circle cx="16" cy="11" r="1"></circle><circle cx="8" cy="11" r="1"></circle></svg>
+    <span>Feedback &amp; Help</span>
+  </a>
+  <div class="user-pill">
+    <div class="avatar">{{ student.name[:1]|upper if student and student.name else 'S' }}</div>
+    <div class="user-meta">
+      <span class="user-name">{{ student.name }}</span>
+      <span class="user-role">Batch {{ student.batch }} &middot; ID {{ student.student_id }}</span>
+    </div>
+  </div>
+  <a class="btn alt sm" href="/logout" title="Log out">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+    Log out
+  </a>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <div class="page-head">
+    <div class="page-title-box">
+      <h1>Welcome, {{ student.name.split()[0] }}! <span style="font-size:22px">👋</span></h1>
+      <p class="muted">Select your course below to begin interactive study with your AI tutor, practice questions, or test yourself with quizzes.</p>
+    </div>
+  </div>
+
+  <div class="guardrail-banner">
+    <div class="guardrail-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+    </div>
+    <div class="guardrail-content">
+      <b>Strict Academic Guardrails Enabled</b>
+      <p>This AI tutor strictly answers from your official lecture materials and syllabus. Off-topic queries are restricted to keep your preparation focused on exam success.</p>
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-top:20px">
+    {% for k, c in COURSES.items() %}
+    <a class="course-card" href="/chat/{{ k }}">
+      <div>
+        <div class="course-header">
+          <span class="course-code-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            {{ c.code }}
+          </span>
+          <span class="pill good">Active Term</span>
+        </div>
+
+        <h2 class="course-title">{{ c.title }}</h2>
+        <div class="course-program">{{ c.program }}</div>
+
+        <p class="course-desc">
+          {% if c.desc %}
+          {{ c.desc }}
+          {% elif k == 'biostatistics' %}
+          Master descriptive statistics, probability distributions, hypothesis testing, t-tests, ANOVA, and step-by-step calculations with Microsoft Excel.
+          {% elif k == 'research_methods' %}
+          Learn epidemiological study designs, odds ratios, relative risk, PubMed literature searching strategies, and research evaluation.
+          {% else %}
+          Interactive AI study companion grounded in the official lecture slides and curriculum materials for {{ c.title }}.
+          {% endif %}
+        </p>
+
+        <div class="course-tags">
+          <span class="pill">🎯 Practice MCQ</span>
+          <span class="pill">✍️ Theory Exam</span>
+          <span class="pill">📚 Lecture Slides</span>
+          <span class="pill">💬 24/7 AI Tutor</span>
+        </div>
+      </div>
+
+      <div class="course-footer">
+        <span>Launch AI Tutor Room</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- Student Feedback Callout Banner -->
+  <div class="card" style="margin-top:24px;background:linear-gradient(135deg,var(--navy-50),#fff);border:1px solid var(--navy-100);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:42px;height:42px;border-radius:10px;background:var(--navy-100);color:var(--navy-700);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      </div>
+      <div>
+        <h4 style="margin:0 0 4px;font-size:15px;color:var(--navy-950)">Have feedback or found an issue in the materials?</h4>
+        <p style="margin:0;font-size:13px;color:var(--slate-600)">Submit an anonymous report to your course instructor. We never attach your name or student ID.</p>
+      </div>
+    </div>
+    <a href="/feedback" class="btn alt">
+      <span>Give Anonymous Feedback</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+    </a>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Shaqra University - AI Course Tutor Portal{% endblock %}
+{% block header %}{% endblock %}
+
+{% block body %}
+<div class="landing-hero-bg">
+  <div class="landing-container">
+    
+    <!-- Header / Brand -->
+    <div class="landing-header">
+      <div class="landing-brand">
+        <div class="landing-crest">
+          {% if logo != 'logo.svg' %}
+          <img src="{{ url_for('static', filename=logo) }}" alt="Shaqra University" style="height:46px;width:auto;display:block;">
+          {% else %}
+          <svg width="48" height="48" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="90" height="90" rx="18" fill="rgba(255, 255, 255, 0.08)" stroke="rgba(255, 255, 255, 0.16)" stroke-width="2"/>
+            <path d="M45 20 16 35l29 15 29-15z M24 45v13c0 6 10 11 21 11s21-5 21-11V45l-21 11z" fill="#ffffff"/>
+            <line x1="72" y1="36" x2="72" y2="52" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="72" cy="54" r="2.5" fill="#38bdf8"/>
+          </svg>
+          {% endif %}
+        </div>
+        <div class="landing-brand-text">
+          <span class="univ-name">جامعة شقراء &middot; Shaqra University</span>
+          <span class="dept-name">College of Pharmacy &middot; Academic AI Assistant</span>
+        </div>
+      </div>
+      <div class="landing-badge">
+        <span class="pulse-dot"></span>
+        <span>Academic Term Active</span>
+      </div>
+    </div>
+
+    <!-- Hero Title -->
+    <div class="landing-hero-text">
+      <h1 class="landing-title">
+        Intelligent Course Companion <br>
+        <span class="gradient-text">Built for Pharmacy Excellence</span>
+      </h1>
+      <p class="landing-subtitle">
+        Strictly grounded in official lecture slides and university syllabus. Practice questions, take quizzes, and master pharmaceutical sciences with tailored AI guidance.
+      </p>
+    </div>
+
+    <!-- Portal Selection Cards -->
+    <div class="landing-grid">
+      <!-- Student Portal Card -->
+      <div class="portal-card student-card">
+        <div class="portal-card-header">
+          <div class="portal-icon student-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+          </div>
+          <div>
+            <span class="portal-tag student-tag">For Enrolled Students</span>
+            <h2 class="portal-name">Student Learning Portal</h2>
+          </div>
+        </div>
+        <p class="portal-desc">
+          Chat with the AI tutor for your courses, test yourself with practice MCQs &amp; theory questions, and submit anonymous course feedback.
+        </p>
+        <ul class="portal-features">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+            Ask 24/7 syllabus-grounded questions
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+            Interactive MCQ &amp; Theory practice exams
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+            Anonymous feedback &amp; issue submission
+          </li>
+        </ul>
+        <div class="portal-actions">
+          <a href="/login" class="btn btn-primary portal-btn">
+            <span>Student Sign In</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+          <a href="/register" class="btn btn-secondary portal-btn">
+            <span>New Student? Register</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Instructor Portal Card -->
+      <div class="portal-card teacher-card">
+        <div class="portal-card-header">
+          <div class="portal-icon teacher-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              <line x1="9" y1="7" x2="15" y2="7"></line>
+              <line x1="9" y1="11" x2="13" y2="11"></line>
+            </svg>
+          </div>
+          <div>
+            <span class="portal-tag teacher-tag">Faculty &amp; Instructors</span>
+            <h2 class="portal-name">Instructor Dashboard</h2>
+          </div>
+        </div>
+        <p class="portal-desc">
+          Upload course slides &amp; documents, manage courses, track student analytics, inspect weak topics, and review anonymous student feedback.
+        </p>
+        <ul class="portal-features">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+            Knowledge Base management (Upload slides &amp; PDFs)
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+            Course management &amp; instructor account creation
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+            Real-time analytics &amp; anonymous student feedback
+          </li>
+        </ul>
+        <div class="portal-actions">
+          <a href="/teacher/login" class="btn btn-navy portal-btn">
+            <span>Faculty Sign In</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+          <div class="portal-note">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>Instructor accounts are provisioned by administrator</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust / Guardrail Footer -->
+    <div class="landing-footer-banner">
+      <div class="guardrail-chip">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>Strict Syllabus Grounding</span>
+      </div>
+      <div class="guardrail-chip">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <span>Bilingual (English / العربية)</span>
+      </div>
+      <div class="guardrail-chip">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <span>Confidential &amp; Anonymous Feedback</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

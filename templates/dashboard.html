@@ -1,0 +1,547 @@
+{% extends "tbase.html" %}
+{% block title %}{{ cfg.title }} - Faculty Analytics Dashboard{% endblock %}
+
+{% block head %}
+<script src="{{ url_for('static', filename='chart.umd.js') }}"></script>
+{% endblock %}
+
+{% macro acc(a) %}
+{% if a is none %}
+<span class="muted">&mdash;</span>
+{% else %}
+<div class="acc-cell">
+  <div class="bar">
+    <i style="width:{{ a }}%;background:{{ '#ef4444' if a<60 else ('#f59e0b' if a<80 else '#10b981') }}"></i>
+  </div>
+  <b style="font-size:12.5px;color:{{ '#dc2626' if a<60 else ('#d97706' if a<80 else '#059669') }}">{{ '%.0f'|format(a) }}%</b>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% block body %}
+<div class="wrap">
+  <!-- Page Header -->
+  <div class="page-head">
+    <div class="page-title-box">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+        <h1 style="margin:0">{{ cfg.title }}</h1>
+        <span class="pill navy" style="font-size:12px;font-weight:700">{{ cfg.code }}</span>
+      </div>
+      <p class="muted" style="margin:0">Faculty Analytics Cockpit &middot; Confidential Academic Monitoring</p>
+    </div>
+
+    <div class="page-actions">
+      <!-- Course Switcher -->
+      <div class="course-switcher-bar">
+        {% for k, c in COURSES.items() %}
+        <a class="course-switch-btn {{ 'active' if k==course }}" href="?course={{ k }}">
+          <span class="course-btn-code">{{ c.code }}</span>
+          <span>{{ c.title.split('&')[0].strip() }}</span>
+        </a>
+        {% endfor %}
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center">
+        <a class="btn green sm" href="/teacher/report.pdf?course={{ course }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+          Download PDF
+        </a>
+        <a class="btn alt sm" href="/teacher/export.csv">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Export CSV
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="grid g6">
+    <div class="card kpi">
+      <div class="kpi-head">
+        <span>Active Students</span>
+        <div class="kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+      </div>
+      <b>{{ st.active }}</b>
+      <span>of {{ st.registered }} enrolled</span>
+    </div>
+
+    <div class="card kpi">
+      <div class="kpi-head">
+        <span>Questions Inquired</span>
+        <div class="kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+      </div>
+      <b>{{ st.messages }}</b>
+      <span>Total student queries</span>
+    </div>
+
+    <div class="card kpi">
+      <div class="kpi-head">
+        <span>Quiz Attempts</span>
+        <div class="kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        </div>
+      </div>
+      <b>{{ st.quiz_attempts }}</b>
+      <span>MCQ &amp; theory questions</span>
+    </div>
+
+    <div class="card kpi {{ 'accent-green' if st.accuracy and st.accuracy>=80 else ('accent-amber' if st.accuracy and st.accuracy>=60 else ('accent-red' if st.accuracy else '')) }}">
+      <div class="kpi-head">
+        <span>Avg Quiz Accuracy</span>
+        <div class="kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+        </div>
+      </div>
+      <b>{{ '&mdash;'|safe if st.accuracy is none else ('%.0f'|format(st.accuracy)~'%') }}</b>
+      <span>Class mastery benchmark</span>
+    </div>
+
+    <div class="card kpi accent-amber">
+      <div class="kpi-head">
+        <span>Off-Topic Queries</span>
+        <div class="kpi-icon" style="background:var(--amber-50);color:var(--amber-600)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+      </div>
+      <b>{{ st.out_of_scope }}</b>
+      <span>Guardrail blocked inquiries</span>
+    </div>
+
+    <div class="card kpi">
+      <div class="kpi-head">
+        <span>Logins Today</span>
+        <div class="kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+      </div>
+      <b>{{ logins_today }}</b>
+      <span>Active sessions today</span>
+    </div>
+  </div>
+
+  <!-- Visualizations Section -->
+  <div class="grid g2" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title-row">
+        <div>
+          <h2>Quiz accuracy by topic</h2>
+          <div class="muted">Performance threshold (<60% Needs Focus, 60-79% Progressing, &ge;80% Mastered)</div>
+        </div>
+      </div>
+      <div style="position:relative;min-height:240px">
+        <canvas id="c1" height="240"></canvas>
+        <div id="c1-empty" class="empty-state hide">
+          <div class="empty-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          </div>
+          <h3>No quiz attempts recorded yet</h3>
+          <p>Topic accuracy visualization will appear once students answer quiz questions.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title-row">
+        <div>
+          <h2>Most Inquired Lecture Topics</h2>
+          <div class="muted">Distribution of student inquiries across course syllabus</div>
+        </div>
+      </div>
+      <div style="position:relative;min-height:240px">
+        <canvas id="c2" height="240"></canvas>
+        <div id="c2-empty" class="empty-state hide">
+          <div class="empty-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          </div>
+          <h3>No student inquiries recorded yet</h3>
+          <p>Inquiry distribution will appear once students interact with the AI tutor.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pedagogical Alerts & Cohort Breakdown -->
+  <div class="grid g2" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title-row">
+        <div>
+          <h2>Pedagogical Alert: Needs Attention</h2>
+          <div class="muted">Students and curriculum topics requiring instructional intervention</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <b style="display:block;font-size:12.5px;color:var(--slate-600);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px">
+          Weak Topics (&lt;60% accuracy):
+        </b>
+        {% if st.weak_topics %}
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          {% for t in st.weak_topics %}
+          <span class="pill bad">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            {{ t.topic }} &middot; {{ '%.0f'|format(t.accuracy) }}%
+          </span>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted" style="margin:0">No weak topics detected (requires &ge;3 attempts per topic).</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <b style="display:block;font-size:12.5px;color:var(--slate-600);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px">
+          Students Below 60% Overall:
+        </b>
+        {% if st.needs_help %}
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          {% for s in st.needs_help %}
+          <a class="pill bad" href="/teacher/student/{{ s.pk }}?course={{ course }}">
+            {{ s.name }} &middot; {{ '%.0f'|format(s.accuracy) }}% &rarr;
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted" style="margin:0">All participating students are currently meeting the 60% benchmark.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title-row">
+        <div>
+          <h2>Cohort &amp; Batch Breakdown</h2>
+          <div class="muted">Performance metrics segmented by student enrollment batch</div>
+        </div>
+      </div>
+
+      {% if st.batches %}
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Batch</th>
+              <th>Students</th>
+              <th>Inquiries</th>
+              <th>Quiz Accuracy</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in st.batches %}
+            <tr>
+              <td><b>Batch {{ b.batch }}</b></td>
+              <td>{{ b.students }}</td>
+              <td>{{ b.msgs }}</td>
+              <td>{{ acc(b.accuracy) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:24px 10px">
+        <p class="muted">No cohort batch data recorded yet.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- AI Curriculum Recommendations -->
+  <div class="card" style="margin-top:20px" id="reco">
+    <div class="card-title-row">
+      <div>
+        <h2>AI Curriculum Diagnostic &amp; Recommendations</h2>
+        <div class="muted">Synthesizes anonymous cohort metrics into actionable teaching adjustments</div>
+      </div>
+      <form method="post" action="/teacher/recommend?course={{ course }}" style="margin:0">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button class="btn green sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          {{ 'Regenerate Analysis' if reco else 'Generate Analysis' }}
+        </button>
+      </form>
+    </div>
+
+    {% if not ai_live %}
+    <div class="pill warn" style="margin-bottom:10px;font-size:12px">
+      Demo Mode: OpenAI API key not configured. Mock output active.
+    </div>
+    {% endif %}
+
+    {% if reco %}
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">
+      Generated {{ reco.created_at }} UTC &middot; Included in downloadable PDF report
+    </div>
+    <div class="reco" dir="auto">{{ reco.text }}</div>
+    {% else %}
+    <p class="muted" style="margin:0">
+      Click "Generate Analysis" above to generate AI recommendations based on student inquiries and quiz difficulties. Data is anonymized before processing.
+    </p>
+    {% endif %}
+  </div>
+
+  <!-- Inquiry Breakdown & Guardrail Analysis -->
+  <div class="grid g2" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title-row">
+        <div>
+          <h2>Top Student Inquiries</h2>
+          <div class="muted">Most frequent conceptual questions asked to the tutor</div>
+        </div>
+      </div>
+
+      {% if st.top_questions %}
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Question Topic / Inquiry</th>
+              <th style="width:70px;text-align:right">Frequency</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for q in st.top_questions[:8] %}
+            <tr>
+              <td dir="auto" style="font-size:13px">{{ q.q }}</td>
+              <td style="text-align:right">
+                <span class="pill navy">&times;{{ q.count }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:28px 10px">
+        <p class="muted">No student questions recorded yet.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <div class="card-title-row">
+        <div>
+          <h2>Guardrail Monitored: Off-Topic Queries</h2>
+          <div class="muted">Queries blocked or outside syllabus to identify curriculum gaps</div>
+        </div>
+      </div>
+
+      {% if st.oos_examples %}
+      <div style="display:flex;flex-direction:column;gap:8px">
+        {% for q in st.oos_examples %}
+        <div style="padding:10px 14px;background:var(--red-50);border:1px solid var(--red-100);border-radius:var(--radius-sm);font-size:13px;color:var(--red-700)" dir="auto">
+          &bull; {{ q }}
+        </div>
+        {% endfor %}
+      </div>
+      <p class="muted" style="margin-top:12px;font-size:12px">
+        Repeated queries may suggest topics students want included in future lectures.
+      </p>
+      {% else %}
+      <div class="empty-state" style="padding:28px 10px">
+        <p class="muted">Zero out-of-scope queries recorded. Students are strictly adhering to course materials.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Student Roster Table -->
+  <div class="card" style="margin-top:20px">
+    <div class="card-title-row">
+      <div>
+        <h2>Enrolled Student Roster &amp; Mastery</h2>
+        <div class="muted">Individual student progress and topic performance</div>
+      </div>
+      <input id="rosterSearch" placeholder="Filter by student name or ID..." style="max-width:260px;padding:7px 12px;font-size:13px">
+    </div>
+
+    {% if st.students %}
+    <div class="table-wrapper">
+      <table id="rosterTable">
+        <thead>
+          <tr>
+            <th>Student ID</th>
+            <th>Name</th>
+            <th>Batch</th>
+            <th>Questions</th>
+            <th>Quizzes</th>
+            <th style="min-width:120px">Accuracy</th>
+            <th>Needs Review</th>
+            <th>Mastered</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in st.students %}
+          <tr>
+            <td><span class="pill" style="font-family:monospace">{{ s.student_id }}</span></td>
+            <td>
+              <a href="/teacher/student/{{ s.pk }}?course={{ course }}" style="font-weight:600">
+                {{ s.name }}
+              </a>
+            </td>
+            <td>{{ s.batch }}</td>
+            <td>{{ s.msgs }}</td>
+            <td>{{ s.quiz_n }}</td>
+            <td>{{ acc(s.accuracy) }}</td>
+            <td>
+              {% for t in s.weak %}
+              <span class="pill bad">{{ t }}</span>
+              {% else %}
+              <span class="muted" style="font-size:12px">&mdash;</span>
+              {% endfor %}
+            </td>
+            <td>
+              {% for t in s.strong %}
+              <span class="pill good">{{ t }}</span>
+              {% else %}
+              <span class="muted" style="font-size:12px">&mdash;</span>
+              {% endfor %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+      </div>
+      <h3>No student activity recorded yet</h3>
+      <p>Student engagement metrics will populate automatically when students begin coursework.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+// Filter table
+const searchInp = document.getElementById('rosterSearch');
+if (searchInp) {
+  searchInp.oninput = e => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#rosterTable tbody tr').forEach(r => {
+      r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+    });
+  };
+}
+
+// Chart Renderings
+const T = {{ st.topics|tojson }};
+const A = {{ st.most_asked|tojson }};
+const col = a => a < 60 ? '#ef4444' : (a < 80 ? '#f59e0b' : '#10b981');
+
+// Chart 1: Quiz Accuracy by Topic
+const tt = T.filter(t => t.accuracy !== null && t.attempts > 0);
+const c1Canvas = document.getElementById('c1');
+const c1Empty = document.getElementById('c1-empty');
+
+if (tt.length === 0) {
+  c1Canvas.classList.add('hide');
+  c1Empty.classList.remove('hide');
+} else {
+  new Chart(c1Canvas, {
+    type: 'bar',
+    data: {
+      labels: tt.map(t => t.topic.length > 28 ? t.topic.slice(0, 26) + '...' : t.topic),
+      datasets: [{
+        label: 'Accuracy %',
+        data: tt.map(t => t.accuracy),
+        backgroundColor: tt.map(t => col(t.accuracy)),
+        borderRadius: 6,
+        borderSkipped: false,
+        maxBarThickness: 24
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f172a',
+          titleFont: { family: 'Plus Jakarta Sans', size: 12 },
+          bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+          padding: 10,
+          cornerRadius: 8,
+          callbacks: {
+            label: ctx => `Accuracy: ${ctx.parsed.x}% (${tt[ctx.dataIndex].attempts} attempts)`
+          }
+        }
+      },
+      scales: {
+        x: {
+          min: 0,
+          max: 100,
+          grid: { color: '#f1f5f9' },
+          ticks: { callback: v => v + '%', font: { family: 'Plus Jakarta Sans', size: 11 } }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '500' } }
+        }
+      }
+    }
+  });
+}
+
+// Chart 2: Most Inquired Lecture Topics
+const aa = A.filter(t => t.asked > 0);
+const c2Canvas = document.getElementById('c2');
+const c2Empty = document.getElementById('c2-empty');
+
+if (aa.length === 0) {
+  c2Canvas.classList.add('hide');
+  c2Empty.classList.remove('hide');
+} else {
+  new Chart(c2Canvas, {
+    type: 'bar',
+    data: {
+      labels: aa.map(t => t.topic.length > 28 ? t.topic.slice(0, 26) + '...' : t.topic),
+      datasets: [{
+        label: 'Questions Asked',
+        data: aa.map(t => t.asked),
+        backgroundColor: '#14365d',
+        hoverBackgroundColor: '#1d4976',
+        borderRadius: 6,
+        borderSkipped: false,
+        maxBarThickness: 24
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f172a',
+          titleFont: { family: 'Plus Jakarta Sans', size: 12 },
+          bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+          padding: 10,
+          cornerRadius: 8,
+          callbacks: {
+            label: ctx => `${ctx.parsed.x} student questions asked`
+          }
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, font: { family: 'Plus Jakarta Sans', size: 11 } },
+          grid: { color: '#f1f5f9' }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '500' } }
+        }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

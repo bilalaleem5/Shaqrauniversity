@@ -1,0 +1,105 @@
+{% extends "tbase.html" %}
+{% block title %}Anonymous Student Feedback - Shaqra University{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  
+  <div class="page-head">
+    <div class="page-title-box">
+      <h1>Anonymous Student Feedback</h1>
+      <p class="muted">Review anonymous reports, lecture questions, and platform suggestions submitted by students. Student identities are protected to encourage honest academic feedback.</p>
+    </div>
+  </div>
+
+  <!-- Summary metric cards -->
+  <div class="grid g3" style="margin-bottom:24px">
+    <div class="stat-card">
+      <div class="stat-label">Total Submissions</div>
+      <div class="stat-val">{{ rows|length }}</div>
+      <div class="subtext">Anonymous student reports</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Feedback Status</div>
+      <div class="stat-val" style="color:var(--emerald-600)">Live</div>
+      <div class="subtext">Real-time student channel</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Identity Protection</div>
+      <div class="stat-val" style="font-size:18px;margin-top:4px">
+        <span class="pill good">100% Confidential</span>
+      </div>
+      <div class="subtext">No student PII stored</div>
+    </div>
+  </div>
+
+  <!-- Feedback Stream -->
+  <div class="card">
+    <div class="card-head">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        Feedback Stream ({{ rows|length }})
+      </h3>
+      <span class="subtext">Most Recent First</span>
+    </div>
+
+    {% if not rows %}
+    <div class="empty-state" style="padding:48px 16px">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <h4>No student feedback received yet</h4>
+      <p>When students submit feedback or report questions via their portal, messages will appear here anonymously.</p>
+    </div>
+    {% else %}
+    <div class="feedback-stream">
+      {% for r in rows %}
+      <div class="feedback-card">
+        <div class="feedback-card-header">
+          <div class="feedback-badges">
+            {% if r.course and r.course in COURSES %}
+            <span class="pill navy" style="font-weight:700">{{ COURSES[r.course].code }}</span>
+            {% elif r.course %}
+            <span class="pill navy">{{ r.course }}</span>
+            {% else %}
+            <span class="pill muted">General Feedback</span>
+            {% endif %}
+
+            <span class="feedback-cat-badge cat-{{ r.category }}">
+              {% if r.category == 'content_clarity' %}Course Notes Clarity
+              {% elif r.category == 'ai_response' %}AI Tutor Answer
+              {% elif r.category == 'quiz_issue' %}Quiz / Assessment
+              {% elif r.category == 'bug' %}Technical Glitch
+              {% elif r.category == 'suggestion' %}Curriculum Suggestion
+              {% else %}{{ r.category|title }}{% endif %}
+            </span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="feedback-time">{{ r.created_at }}</span>
+            <form action="/teacher/feedback/{{ r.id }}/delete" method="post" onsubmit="return confirm('Dismiss and remove this feedback entry?');" style="margin:0">
+              <input type="hidden" name="csrf" value="{{ csrf }}">
+              <button type="submit" class="btn alt sm danger-hover" title="Dismiss feedback">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                Dismiss
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div class="feedback-card-body">
+          <p class="feedback-message-text">{{ r.message }}</p>
+        </div>
+
+        <div class="feedback-card-footer">
+          <span class="anonymous-tag">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            Submitted by Anonymous Enrolled Student
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,285 @@
+{% extends "tbase.html" %}
+{% block title %}{{ base.name }} - Student Detail{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <!-- Back Link & Header -->
+  <div style="margin-bottom:14px">
+    <a href="/teacher/students" class="muted" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:13px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      Back to Students Roster
+    </a>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="page-head" style="margin-bottom:0">
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="avatar" style="width:48px;height:48px;font-size:18px;border-radius:var(--radius-md)">
+          {{ base.name[:1]|upper }}
+        </div>
+        <div>
+          <h1 style="margin:0 0 4px">
+            {{ base.name }}
+            {% if base.status!='active' %}
+            <span class="pill sus" style="font-size:12px;vertical-align:middle">Suspended</span>
+            {% else %}
+            <span class="pill good" style="font-size:12px;vertical-align:middle">Active</span>
+            {% endif %}
+          </h1>
+          <div class="muted">
+            ID: <span style="font-family:monospace;font-weight:600;color:var(--text-main)">{{ base.student_id }}</span> &middot;
+            {{ base.email or 'No email' }} &middot;
+            Batch {{ base.batch }} &middot;
+            Section: {{ 'Male' if base.gender=='male' else ('Female' if base.gender=='female' else '&mdash;')|safe }} &middot;
+            Registered: {{ base.created_at[:16] }} &middot;
+            <b>{{ base.login_count }}</b> Logins
+          </div>
+        </div>
+      </div>
+
+      <div class="page-actions">
+        <form method="post" action="/teacher/student/{{ base.id }}/action" style="display:flex;gap:8px;align-items:center;margin:0">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          {% if base.status=='active' %}
+          <button name="action" value="suspend" class="btn amber sm">Suspend</button>
+          {% else %}
+          <button name="action" value="activate" class="btn green sm">Activate</button>
+          {% endif %}
+          <button name="action" value="reset_password" class="btn alt sm" onclick="return confirm('Generate a temporary password for {{ base.name|e }}?')">Reset Password</button>
+          {% if base.email %}
+          <button name="action" value="block_email" class="btn alt sm" onclick="return confirm('Block email {{ base.email|e }} from the platform?')">Block Email</button>
+          {% endif %}
+          <button name="action" value="delete" class="btn red sm" onclick="return confirm('Permanently delete {{ base.name|e }} and all related academic records?')">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Course Selector for Student Details -->
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+    <div style="display:flex;gap:6px;background:var(--slate-100);padding:4px;border-radius:var(--radius-md);border:1px solid var(--border)">
+      {% for k, c in COURSES.items() %}
+      <a class="btn sm {{ '' if k==course else 'alt' }}" href="?course={{ k }}">
+        {{ c.title.split('&')[0] }} ({{ c.code }})
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if s %}
+  <!-- Student KPIs -->
+  <div class="grid g3">
+    <div class="card kpi">
+      <div class="kpi-head">
+        <span>Questions Inquired</span>
+        <div class="kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+      </div>
+      <b>{{ s.msgs }}</b>
+      <span>Queries in this course</span>
+    </div>
+
+    <div class="card kpi">
+      <div class="kpi-head">
+        <span>Quiz Answers</span>
+        <div class="kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+        </div>
+      </div>
+      <b>{{ s.quiz_n }}</b>
+      <span>Questions attempted</span>
+    </div>
+
+    <div class="card kpi {{ 'accent-green' if s.accuracy and s.accuracy>=80 else ('accent-amber' if s.accuracy and s.accuracy>=60 else ('accent-red' if s.accuracy else '')) }}">
+      <div class="kpi-head">
+        <span>Course Accuracy</span>
+        <div class="kpi-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+        </div>
+      </div>
+      <b>{{ '&mdash;'|safe if s.accuracy is none else ('%.0f'|format(s.accuracy)~'%') }}</b>
+      <span>Overall course mastery</span>
+    </div>
+  </div>
+
+  <!-- Strengths & Weaknesses -->
+  <div class="grid g2" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title-row">
+        <div>
+          <h2>Mastered Topics (&ge;80% accuracy)</h2>
+          <div class="muted">Concepts student has successfully understood</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        {% for t in s.strong %}
+        <span class="pill good">{{ t }}</span>
+        {% else %}
+        <p class="muted" style="margin:0">No topics mastered yet (&ge;2 attempts needed).</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title-row">
+        <div>
+          <h2>Topics Needing Focus (&lt;60% accuracy)</h2>
+          <div class="muted">Concepts where student faced difficulty</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        {% for t in s.weak %}
+        <span class="pill bad">{{ t }}</span>
+        {% else %}
+        <p class="muted" style="margin:0">No persistent weaknesses detected.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Topic Accuracy Table -->
+  {% if s.topic_stats %}
+  <div class="card" style="margin-top:20px">
+    <div class="card-title-row">
+      <div>
+        <h2>Quiz Accuracy by Topic</h2>
+        <div class="muted">Performance breakdown for each lecture topic</div>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Topic</th>
+            <th style="width:200px">Accuracy</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t, a in s.topic_stats.items() %}
+          <tr>
+            <td><b>{{ t }}</b></td>
+            <td>
+              <div class="acc-cell">
+                <div class="bar">
+                  <i style="width:{{ a }}%;background:{{ '#ef4444' if a<60 else ('#f59e0b' if a<80 else '#10b981') }}"></i>
+                </div>
+                <b style="font-size:12.5px">{{ '%.0f'|format(a) }}%</b>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="card" style="margin-top:20px">
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      </div>
+      <h3>No activity in {{ cfg.title }} yet</h3>
+      <p>This student has not yet asked questions or answered quizzes for this course.</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Recent Questions & Login Activity -->
+  <div class="grid g2" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title-row">
+        <div>
+          <h2>Recent Questions Asked</h2>
+          <div class="muted">Chronological query history in this course</div>
+        </div>
+      </div>
+      {% if msgs %}
+      <div style="display:flex;flex-direction:column;gap:12px">
+        {% for m in msgs %}
+        <div style="padding-bottom:12px;border-bottom:1px solid var(--border-subtle)" dir="auto">
+          <div style="font-weight:600;font-size:13.5px;margin-bottom:4px;color:var(--text-main)">{{ m.question }}</div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            {% if not m.in_scope %}
+            <span class="pill bad" style="font-size:11px">Outside Syllabus</span>
+            {% endif %}
+            {% if m.topic %}
+            <span class="pill" style="font-size:11px">{{ m.topic }}</span>
+            {% endif %}
+            <span class="muted" style="font-size:11.5px">{{ m.created_at[:16] }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:20px">
+        <p class="muted">No questions asked in this course.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <div class="card-title-row">
+        <div>
+          <h2>Recent logins</h2>
+          <div class="muted">Security log of authenticated sessions</div>
+        </div>
+      </div>
+      {% if logins %}
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>IP Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in logins %}
+            <tr>
+              <td>{{ l.at[:16] }}</td>
+              <td><span class="pill" style="font-family:monospace">{{ l.ip }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:20px">
+        <p class="muted">No recent login sessions recorded.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Theory Answers Section -->
+  {% if theory %}
+  <div class="card" style="margin-top:20px">
+    <div class="card-title-row">
+      <div>
+        <h2>Written Theory Submissions</h2>
+        <div class="muted">Student's written responses and AI evaluation breakdown</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      {% for z in theory %}
+      <div style="padding:16px;border:1px solid var(--border);border-radius:var(--radius-md);background:#fafcff" dir="auto">
+        <div style="font-weight:700;font-size:14px;margin-bottom:8px">{{ z.question }}</div>
+        {% if z.student_answer %}
+        <div class="ans" style="background:#ffffff;margin:8px 0">{{ z.student_answer }}</div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+          <span class="pill {{ 'good' if z.score>=60 else 'bad' }}">Score: {{ '%.0f'|format(z.score) }}%</span>
+          <span class="muted" style="font-size:13px">{{ z.feedback }}</span>
+        </div>
+        {% else %}
+        <div class="muted" style="font-size:13px;font-style:italic">Student viewed model answer without writing a submission.</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

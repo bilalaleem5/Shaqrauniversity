@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Faculty Instructor Portal - Shaqra University{% endblock %}
+{% block header %}{% endblock %}
+
+{% block body %}
+<div class="center" style="padding: 30px 16px;">
+  <div class="auth-card-wrapper">
+
+    <!-- Top breadcrumb / navigation -->
+    <div class="auth-nav-bar">
+      <a href="/" class="auth-back-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <span>Back to Portal Selection</span>
+      </a>
+      <a href="/login" class="auth-switch-link">
+        <span>Student Portal</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+    </div>
+
+    <div class="auth">
+      <div class="auth-header">
+        <div class="auth-logo-box" style="background:var(--navy-900);border-color:var(--navy-700)">
+          <img src="{{ url_for('static', filename=logo) }}" alt="Shaqra University">
+        </div>
+        <h1>Faculty &amp; Instructor Portal</h1>
+        <p>Curriculum Analytics &middot; Knowledge Base &middot; Student Diagnostics</p>
+      </div>
+
+      <div class="role-indicator-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <span>Authorized Faculty Access Only</span>
+      </div>
+
+      {% if err %}
+      <div class="err">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        {{ err }}
+      </div>
+      {% endif %}
+
+      <form method="post" autocomplete="on">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        
+        <div>
+          <label>Instructor Username</label>
+          <input name="username" required autofocus autocomplete="username" placeholder="Enter your faculty username" value="{{ request.form.username }}">
+        </div>
+
+        <div>
+          <label>Password</label>
+          <input type="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
+        </div>
+
+        <button class="btn lg" style="width:100%;margin-top:22px;background:linear-gradient(135deg,var(--navy-900),var(--navy-700))">
+          <span>Sign In to Faculty Portal</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </form>
+
+      <div class="portal-info-box" style="margin-top:20px;padding:12px 14px;background:var(--slate-50);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;color:var(--text-muted);display:flex;align-items:center;gap:10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <span>Faculty accounts are provisioned by the Administrator. Contact the academic department for access credentials.</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

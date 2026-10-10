@@ -1,0 +1,131 @@
+{% extends "tbase.html" %}
+{% block title %}Student Accounts - Faculty Portal{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <div class="page-head">
+    <div class="page-title-box">
+      <h1>
+        Student Accounts
+        <span class="pill navy" style="font-size:12px;vertical-align:middle">{{ rows|length }} Enrolled</span>
+      </h1>
+      <p class="muted">Manage registered student accounts, monitor activity, reset credentials, or suspend access.</p>
+    </div>
+
+    <div class="page-actions">
+      <input id="f" placeholder="Search name, ID, email..." style="max-width:280px;padding:8px 14px;font-size:13px">
+      <a class="btn alt sm" href="/teacher/export.csv">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Export CSV
+      </a>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="table-wrapper" style="border:none">
+      <table id="tb">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Student ID</th>
+            <th>Email</th>
+            <th>Batch</th>
+            <th>Section</th>
+            <th>Registered</th>
+            <th>Last Login</th>
+            <th>Logins</th>
+            <th>Questions</th>
+            <th>Quizzes</th>
+            <th>Accuracy</th>
+            <th>Status</th>
+            <th style="text-align:right">Administrative Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>
+              <a href="/teacher/student/{{ r.id }}" style="font-weight:600">
+                {{ r.name }}
+              </a>
+              {% if r.is_demo %}
+              <span class="pill" style="font-size:10px;padding:1px 6px">demo</span>
+              {% endif %}
+            </td>
+            <td><span class="pill" style="font-family:monospace">{{ r.student_id }}</span></td>
+            <td><span style="font-size:12.5px;color:var(--text-muted)">{{ r.email or '&mdash;'|safe }}</span></td>
+            <td>{{ r.batch }}</td>
+            <td>
+              {% if r.gender == 'male' %}
+              <span class="pill navy" style="font-size:11px">Male</span>
+              {% elif r.gender == 'female' %}
+              <span class="pill navy" style="font-size:11px">Female</span>
+              {% else %}
+              <span class="muted">&mdash;</span>
+              {% endif %}
+            </td>
+            <td style="font-size:12px;color:var(--text-muted)">{{ r.created_at[:16] }}</td>
+            <td style="font-size:12px;color:var(--text-muted)">{{ (r.last_login or '&mdash;')[:16]|safe }}</td>
+            <td><b>{{ r.login_count }}</b></td>
+            <td><b>{{ r.msgs }}</b></td>
+            <td><b>{{ r.quizzes }}</b></td>
+            <td>
+              {% if r.acc is none %}
+              <span class="muted">&mdash;</span>
+              {% else %}
+              <span class="pill {{ 'good' if r.acc>=80 else ('warn' if r.acc>=60 else 'bad') }}">
+                {{ '%.0f'|format(r.acc) }}%
+              </span>
+              {% endif %}
+            </td>
+            <td>
+              {% if r.status=='active' %}
+              <span class="pill good">Active</span>
+              {% else %}
+              <span class="pill sus">Suspended</span>
+              {% endif %}
+            </td>
+            <td style="text-align:right;white-space:nowrap">
+              <form method="post" action="/teacher/student/{{ r.id }}/action" class="inline">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                {% if r.status=='active' %}
+                <button name="action" value="suspend" class="btn amber sm" title="Suspend student">Suspend</button>
+                {% else %}
+                <button name="action" value="activate" class="btn green sm" title="Reactivate student">Activate</button>
+                {% endif %}
+                <button name="action" value="reset_password" class="btn alt sm" onclick="return confirm('Generate a temporary password for {{ r.name|e }}?')" title="Generate temporary password">Reset Pwd</button>
+                <button name="action" value="delete" class="btn red sm" onclick="return confirm('Permanently delete {{ r.name|e }} and all related activity?')" title="Delete student record">Delete</button>
+                {% if r.email %}
+                <button name="action" value="delete_block" class="btn red sm" onclick="return confirm('Delete {{ r.name|e }} and permanently block email {{ r.email|e }}?')" title="Delete and block email">Block</button>
+                {% endif %}
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="13">
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                </div>
+                <h3>No student accounts registered yet</h3>
+                <p>Registered students will appear here once they create accounts through the student portal.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('f').oninput = e => {
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll('#tb tbody tr').forEach(r => {
+    r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+  });
+};
+</script>
+{% endblock %}

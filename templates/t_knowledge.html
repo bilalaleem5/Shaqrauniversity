@@ -1,0 +1,204 @@
+{% extends "tbase.html" %}
+{% block title %}Knowledge Base Management - Shaqra University{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  
+  <!-- Header -->
+  <div class="page-head">
+    <div class="page-title-box">
+      <h1>Course Knowledge Base</h1>
+      <p class="muted">Manage official lecture slides, syllabi, and reference documents. The AI Course Tutor strictly answers students using these indexed materials.</p>
+    </div>
+    <div class="header-actions">
+      <form action="/teacher/knowledge/reindex" method="post" style="display:inline" onsubmit="return confirm('Re-chunk and rebuild AI index for this course?');">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="course" value="{{ course }}">
+        <button type="submit" class="btn alt">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          Re-index Course
+        </button>
+      </form>
+      {% if teacher and teacher.is_admin %}
+      <a href="/teacher/courses" class="btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add New Course
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Course Selector Bar -->
+  <div class="kb-course-selector">
+    <span class="kb-selector-label">Select Course:</span>
+    <div class="kb-course-chips">
+      {% for k, c in COURSES.items() %}
+      <a href="/teacher/knowledge?course={{ k }}" class="kb-course-chip {{ 'active' if k==course }}">
+        <span class="chip-code">{{ c.code }}</span>
+        <span class="chip-title">{{ c.title }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% set curr = COURSES[course] if course in COURSES else None %}
+
+  <!-- Course Overview Card -->
+  {% if curr %}
+  <div class="kb-overview-card">
+    <div class="kb-overview-main">
+      <span class="pill navy">{{ curr.code }}</span>
+      <h2>{{ curr.title }}</h2>
+      <p class="muted">{{ curr.program }}</p>
+    </div>
+    <div class="kb-overview-stats">
+      <div class="kb-stat-item">
+        <span class="kb-stat-num">{{ files|length }}</span>
+        <span class="kb-stat-label">Source Documents</span>
+      </div>
+      <div class="kb-stat-item">
+        <span class="kb-stat-num">{{ curr.topics|length if curr.topics else 'Auto' }}</span>
+        <span class="kb-stat-label">Curriculum Topics</span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Main Grid: Upload Area & File List -->
+  <div class="grid g2" style="margin-top:20px;align-items:start">
+    
+    <!-- Upload New Documents Card -->
+    <div class="card">
+      <div class="card-head">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Upload Course Materials
+        </h3>
+        <span class="pill good">Auto-Indexing</span>
+      </div>
+      
+      <p class="subtext" style="margin-bottom:16px">
+        Upload official lecture slides, syllabus, or PDF documents. They will be extracted, chunked, and embedded for student query retrieval.
+      </p>
+
+      <form action="/teacher/knowledge/upload" method="post" enctype="multipart/form-data" id="uploadForm">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="course" value="{{ course }}">
+        
+        <div class="upload-dropzone" id="dropzone">
+          <input type="file" name="files" id="fileInput" multiple accept=".pdf,.docx,.doc,.pptx,.ppt,.txt,.md" style="display:none" onchange="updateFileList(this)">
+          <div class="dropzone-content" onclick="document.getElementById('fileInput').click()">
+            <div class="dropzone-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+            </div>
+            <div class="dropzone-title">Click to browse or drag &amp; drop files</div>
+            <div class="dropzone-hint">Supports PDF, DOCX, PPTX, TXT &middot; Maximum 50MB per file</div>
+          </div>
+          <div id="selectedFilesList" class="selected-files-preview" style="display:none"></div>
+        </div>
+
+        <button type="submit" class="btn lg" style="width:100%;margin-top:16px" id="uploadSubmitBtn">
+          <span>Upload &amp; Rebuild Index</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </form>
+
+      <div class="kb-info-callout" style="margin-top:16px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <span>Upon upload, text is automatically extracted and chunked. If an OpenAI API key is set, semantic vector embeddings will be updated automatically in the background.</span>
+      </div>
+    </div>
+
+    <!-- Indexed Documents List -->
+    <div class="card">
+      <div class="card-head">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Indexed Course Documents ({{ files|length }})
+        </h3>
+        <span class="subtext">Active in Tutor</span>
+      </div>
+
+      {% if not files %}
+      <div class="empty-state" style="padding:40px 16px">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+        <h4>No documents uploaded yet</h4>
+        <p>Upload lecture slides or PDF notes on the left to activate AI tutoring for this course.</p>
+      </div>
+      {% else %}
+      <div class="kb-file-list">
+        {% for f in files %}
+        <div class="kb-file-item">
+          <div class="kb-file-meta">
+            <span class="kb-ext-badge ext-{{ f.ext.replace('.', '') }}">
+              {{ f.ext.replace('.', '').upper() }}
+            </span>
+            <div class="kb-file-info">
+              <span class="kb-file-name" title="{{ f.name }}">{{ f.name }}</span>
+              <span class="kb-file-size">{{ f.size_kb }} KB &middot; Indexed</span>
+            </div>
+          </div>
+          <div class="kb-file-actions">
+            <form action="/teacher/knowledge/delete" method="post" onsubmit="return confirm('Delete \'{{ f.name }}\' from knowledge base and rebuild index?');" style="margin:0">
+              <input type="hidden" name="csrf" value="{{ csrf }}">
+              <input type="hidden" name="course" value="{{ course }}">
+              <input type="hidden" name="filename" value="{{ f.name }}">
+              <button type="submit" class="btn alt sm danger-hover" title="Delete document">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                Delete
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+function updateFileList(input) {
+  const container = document.getElementById('selectedFilesList');
+  if (input.files.length > 0) {
+    let html = '<div style="font-weight:600;font-size:12px;margin-bottom:6px;color:var(--text-main);">Selected ' + input.files.length + ' file(s):</div>';
+    for (let i = 0; i < input.files.length; i++) {
+      const f = input.files[i];
+      const sz = Math.round(f.size / 1024);
+      html += '<div style="font-size:12px;color:var(--text-muted);display:flex;justify-content:space-between;padding:2px 0;"><span>' + f.name + '</span><span>' + sz + ' KB</span></div>';
+    }
+    container.innerHTML = html;
+    container.style.display = 'block';
+  } else {
+    container.style.display = 'none';
+  }
+}
+
+// Drag & drop support
+const dropzone = document.getElementById('dropzone');
+if (dropzone) {
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault(); e.stopPropagation();
+      dropzone.classList.add('dragover');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault(); e.stopPropagation();
+      dropzone.classList.remove('dragover');
+    }, false);
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    document.getElementById('fileInput').files = files;
+    updateFileList(document.getElementById('fileInput'));
+  });
+}
+</script>
+{% endblock %}

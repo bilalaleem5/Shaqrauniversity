@@ -1,0 +1,85 @@
+{% extends "tbase.html" %}
+{% block title %}Access Control &amp; Blocked List - Faculty Portal{% endblock %}
+
+{% block body %}
+<div class="wrap" style="max-width:960px">
+  <div class="page-head">
+    <div class="page-title-box">
+      <h1>Access Control &amp; Restrictions</h1>
+      <p class="muted">Prevent unauthorized registrations or block compromised student emails and entire domains.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title-row">
+      <div>
+        <h2>Add Security Restriction</h2>
+        <div class="muted">Block specific address (e.g. student@external.com) or whole domain (e.g. external.com)</div>
+      </div>
+    </div>
+
+    <form method="post" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      
+      <div style="flex:2;min-width:240px">
+        <label>Email Address or Domain Pattern</label>
+        <input name="pattern" placeholder="e.g. student@external.com or external.com" required>
+      </div>
+
+      <div style="flex:2;min-width:200px">
+        <label>Reason for Restriction (Optional)</label>
+        <input name="reason" placeholder="e.g. Non-enrolled student or suspicious activity" maxlength="120">
+      </div>
+
+      <button class="btn red" style="height:42px;margin-bottom:1px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+        Block Access
+      </button>
+    </form>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="table-wrapper" style="border:none">
+      <table>
+        <thead>
+          <tr>
+            <th>Restricted Pattern</th>
+            <th>Reason</th>
+            <th>Enacted On</th>
+            <th style="text-align:right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>
+              <b style="font-family:monospace;font-size:13px">{{ r.pattern }}</b>
+            </td>
+            <td>{{ r.reason or '&mdash;'|safe }}</td>
+            <td style="font-size:12px;color:var(--text-muted)">{{ r.created_at[:16] }}</td>
+            <td style="text-align:right">
+              <form method="post" action="/teacher/blocked/{{ r.id }}/remove" class="inline">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <button class="btn alt sm">Unblock</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4">
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                </div>
+                <h3>No access restrictions active</h3>
+                <p>All eligible institutional email addresses can register and access the tutor.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

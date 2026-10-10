@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+{% block title %}{{ cfg.title }} ({{ cfg.code }}) - AI Course Tutor{% endblock %}
+
+{% block nav %}
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <span class="pill navy" style="font-size:12px">
+    <b>{{ cfg.code }}</b> &middot; {{ cfg.title }}
+  </span>
+  <a class="btn alt sm" href="/feedback" title="Submit feedback or report issue">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="12" cy="11" r="1"></circle><circle cx="16" cy="11" r="1"></circle><circle cx="8" cy="11" r="1"></circle></svg>
+    Feedback
+  </a>
+  <a class="btn alt sm" href="/courses">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    Courses
+  </a>
+  <a class="btn alt sm" href="/logout">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+    Log out
+  </a>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="wrap" style="max-width:980px">
+  <div class="tabbar">
+    <button class="active" id="tChat">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      Ask AI Tutor
+    </button>
+    <button id="tQuiz">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      Practice &amp; Quizzes
+    </button>
+  </div>
+
+  <!-- Chat Pane -->
+  <div class="chatbox" id="pChat">
+    <div class="chat-banner">
+      <div>
+        <div class="chat-banner-title">
+          <span>{{ cfg.title }} Academic Assistant</span>
+        </div>
+        <div class="subtext" style="font-size:12px">
+          {{ cfg.program }} &middot; Grounded in official syllabus &amp; slides
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="pill good" style="font-size:11px">
+          <span style="display:inline-block;width:6px;height:6px;background:var(--emerald-500);border-radius:50%"></span>
+          Guardrails Active
+        </span>
+      </div>
+    </div>
+
+    <div class="chips">
+      <span class="chip" id="intro">📖 Introduce Course</span>
+      {% if course=='biostatistics' %}
+      <span class="chip" data-q="How do I calculate the mean and standard deviation in Excel?">📊 Mean &amp; SD in Excel</span>
+      <span class="chip" data-q="When do I use a t-test and how do I run it in Excel?">📐 t-test in Excel</span>
+      <span class="chip" data-q="What is the difference between Type I and Type II errors?">🎯 Type I &amp; II Errors</span>
+      <span class="chip" data-q="Explain the properties of a normal distribution.">📈 Normal Distribution</span>
+      {% else %}
+      <span class="chip" data-q="What is an odds ratio and how do I calculate it?">📑 Odds Ratio</span>
+      <span class="chip" data-q="How do I search PubMed for articles on a drug safety topic?">🔍 PubMed Search</span>
+      <span class="chip" data-q="What is the difference between cohort and case-control studies?">🔬 Study Designs</span>
+      <span class="chip" data-q="How do I structure a short scientific presentation on a study?">🗣️ Presentation Structure</span>
+      {% endif %}
+    </div>
+
+    <div class="msgs" id="msgs"></div>
+
+    <div class="composer">
+      <textarea id="inp" placeholder="Ask anything about {{ cfg.title }}... (English or Arabic)" dir="auto"></textarea>
+      <button class="btn green" id="send">
+        <span>Send</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </div>
+    <div class="composer-hint">
+      Press Enter ↵ to send &middot; Shift+Enter for new line &middot; Answers strictly grounded in lecture slides
+    </div>
+  </div>
+
+  <!-- Quiz Pane -->
+  <div class="card hide" id="pQuiz">
+    <div class="card-title-row">
+      <div>
+        <h2>Practice &amp; Exam Preparation</h2>
+        <div class="muted">Generate questions tailored to your lectures. Practice MCQ or write theory answers for AI grading.</div>
+      </div>
+      <div id="scoreBox"></div>
+    </div>
+
+    <div class="modes" id="modes">
+      <button data-k="mcq" class="on">
+        <span>🎯 Multiple Choice (MCQ)</span>
+      </button>
+      <button data-k="theory">
+        <span>✍️ Theory (AI Graded)</span>
+      </button>
+      <button data-k="study">
+        <span>📖 Study Mode (Instant Model Answer)</span>
+      </button>
+    </div>
+
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;min-width:240px">
+        <select id="topic">
+          <option value="">All Course Topics</option>
+          {% for t in topics %}
+          <option value="{{ t }}">{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn green" id="nextQ">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        Generate Question
+      </button>
+    </div>
+
+    <div class="quiz-container" id="qbox">
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <h3>Ready to test your knowledge?</h3>
+        <p>Select a topic above and click "Generate Question" to start practice questions.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const C = "{{ course }}";
+const $ = s => document.querySelector(s);
+let hist = [];
+
+function add(role, text, src) {
+  const row = document.createElement('div');
+  row.className = 'msg-row ' + (role === 'user' ? 'u' : 'a');
+  
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar ' + (role === 'user' ? 'user' : 'ai');
+  avatar.textContent = (role === 'user' ? '{{ student.name[:1]|upper if student and student.name else "S" }}' : 'AI');
+  row.appendChild(avatar);
+
+  const bubble = document.createElement('div');
+  bubble.className = 'm ' + (role === 'user' ? 'u' : 'a');
+  bubble.dir = 'auto';
+  bubble.textContent = text;
+
+  if (src && src.length) {
+    const sBox = document.createElement('div');
+    sBox.className = 'sources-box';
+    sBox.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> <b>Sources:</b> ' + src.join(' &middot; ');
+    bubble.appendChild(sBox);
+  }
+
+  row.appendChild(bubble);
+  $('#msgs').appendChild(row);
+  $('#msgs').scrollTop = $('#msgs').scrollHeight;
+  return row;
+}
+
+const CSRF = document.querySelector('meta[name=csrf]').content;
+
+async function post(u, b) {
+  const r = await fetch(u, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF': CSRF },
+    body: JSON.stringify(b)
+  });
+  if (r.status === 401) { location = '/login'; return {}; }
+  if (r.status === 400 && !(r.headers.get('content-type') || '').includes('json')) {
+    return { error: 'Session expired. Please reload the page.' };
+  }
+  try {
+    return await r.json();
+  } catch (e) {
+    return { error: 'Unexpected error, please try again.' };
+  }
+}
+
+async function ask(text, intro) {
+  if (!intro) {
+    add('user', text);
+    hist.push({ role: 'user', content: text });
+  }
+  
+  // Animated typing bubble
+  const loaderRow = document.createElement('div');
+  loaderRow.className = 'msg-row a';
+  loaderRow.innerHTML = `
+    <div class="msg-avatar ai">AI</div>
+    <div class="m a">
+      <div class="loading-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>`;
+  $('#msgs').appendChild(loaderRow);
+  $('#msgs').scrollTop = $('#msgs').scrollHeight;
+  $('#send').disabled = true;
+
+  const r = await post('/api/chat/' + C, { message: text, history: hist, intro: !!intro });
+  loaderRow.remove();
+  $('#send').disabled = false;
+
+  if (r.error) {
+    add('a', r.error);
+    return;
+  }
+  add('a', r.answer, r.sources);
+  hist.push({ role: 'assistant', content: r.answer });
+}
+
+$('#send').onclick = () => {
+  const t = $('#inp').value.trim();
+  if (t) {
+    $('#inp').value = '';
+    ask(t);
+  }
+};
+
+$('#inp').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    $('#send').click();
+  }
+});
+
+$('#intro').onclick = () => ask('', true);
+document.querySelectorAll('[data-q]').forEach(c => c.onclick = () => ask(c.dataset.q));
+
+// Initial greeting
+add('a', 'Hello! I am your AI academic tutor for {{ cfg.title }}. Ask me any question from your lecture slides and syllabus, or switch to the Practice & Quizzes tab to test your mastery.');
+
+// Tab switching
+function tab(toQuiz) {
+  $('#pChat').classList.toggle('hide', toQuiz);
+  $('#pQuiz').classList.toggle('hide', !toQuiz);
+  $('#tChat').classList.toggle('active', !toQuiz);
+  $('#tQuiz').classList.toggle('active', toQuiz);
+}
+$('#tChat').onclick = () => tab(false);
+$('#tQuiz').onclick = () => tab(true);
+
+let kind = 'mcq';
+document.querySelectorAll('#modes button').forEach(b => {
+  b.onclick = () => {
+    kind = b.dataset.k;
+    document.querySelectorAll('#modes button').forEach(x => x.classList.toggle('on', x === b));
+  };
+});
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  e.dir = 'auto';
+  return e;
+}
+
+function setScore(r) {
+  if (r.total !== undefined) {
+    const pct = Math.round((r.right / r.total) * 100);
+    $('#scoreBox').innerHTML = `<span class="pill ${pct >= 60 ? 'good' : 'bad'}" style="font-size:13px;padding:4px 12px">
+      Score: <b>${r.right} / ${r.total}</b> (${pct}%)
+    </span>`;
+  }
+}
+
+async function nextQ() {
+  const b = $('#qbox');
+  b.innerHTML = '<div class="empty-state"><p class="muted">Generating curriculum question...</p></div>';
+  $('#nextQ').disabled = true;
+
+  const q = await post('/api/quiz/' + C + '/next', { topic: $('#topic').value, kind: kind });
+  $('#nextQ').disabled = false;
+
+  if (q.error) {
+    b.innerHTML = '';
+    b.appendChild(el('div', 'err', q.error));
+    return;
+  }
+
+  b.innerHTML = '';
+  const card = el('div', 'quiz-card');
+
+  const metaRow = el('div', 'row');
+  metaRow.style.marginBottom = '12px';
+  const pTopic = el('span', 'pill', q.topic);
+  const pKind = el('span', 'pill good', q.kind === 'mcq' ? 'Multiple Choice' : (q.kind === 'theory' ? 'Theory / Short Answer' : 'Study Mode'));
+  metaRow.appendChild(pTopic);
+  metaRow.appendChild(pKind);
+  card.appendChild(metaRow);
+
+  const qText = el('h3', '', q.question);
+  qText.style.fontSize = '16.5px';
+  qText.style.fontWeight = '600';
+  qText.style.marginBottom = '18px';
+  card.appendChild(qText);
+
+  if (q.kind === 'mcq') {
+    const optContainer = el('div');
+    q.options.forEach((o, i) => {
+      const optBtn = el('button', 'opt');
+      const prefix = el('span', 'opt-prefix', String.fromCharCode(65 + i));
+      const optLabel = el('span', '', o);
+      optBtn.appendChild(prefix);
+      optBtn.appendChild(optLabel);
+
+      optBtn.onclick = async () => {
+        card.querySelectorAll('.opt').forEach(y => y.disabled = true);
+        const r = await post('/api/quiz/answer', { id: q.id, chosen: i });
+        if (r.error) {
+          card.appendChild(el('div', 'err', r.error));
+          return;
+        }
+        const allOpts = card.querySelectorAll('.opt');
+        allOpts[r.correct_idx].classList.add('ok');
+        if (!r.correct) {
+          optBtn.classList.add('no');
+        }
+        const fb = el('div', 'fb ' + (r.correct ? 'ok' : 'no'));
+        fb.innerHTML = `<b>${r.correct ? '✓ Correct!' : '✕ Not quite.'}</b> ${r.explanation || ''}`;
+        card.appendChild(fb);
+        setScore(r);
+      };
+      optContainer.appendChild(optBtn);
+    });
+    card.appendChild(optContainer);
+  } else if (q.kind === 'study') {
+    const ansBox = el('div', 'ans');
+    ansBox.innerHTML = '<b>Model Answer:</b><br>' + q.model_answer;
+    card.appendChild(ansBox);
+  } else {
+    const ta = el('textarea', 'big');
+    ta.placeholder = 'Type your written answer here...';
+    card.appendChild(ta);
+
+    const actionRow = el('div', 'row');
+    actionRow.style.marginTop = '14px';
+    const sub = el('button', 'btn green', 'Submit for AI Grading');
+    const rev = el('button', 'btn alt', 'Show Model Answer');
+    actionRow.appendChild(sub);
+    actionRow.appendChild(rev);
+    card.appendChild(actionRow);
+
+    sub.onclick = async () => {
+      sub.disabled = rev.disabled = true;
+      sub.textContent = 'Grading with AI...';
+      const r = await post('/api/quiz/theory', { id: q.id, answer: ta.value });
+      if (r.error) {
+        sub.disabled = rev.disabled = false;
+        sub.textContent = 'Submit for AI Grading';
+        card.appendChild(el('div', 'err', r.error));
+        return;
+      }
+      ta.disabled = true;
+      actionRow.remove();
+      const fb = el('div', 'fb ' + (r.correct ? 'ok' : 'no'));
+      fb.innerHTML = `<b>Score: ${r.score}%</b> &middot; ${r.feedback}`;
+      card.appendChild(fb);
+      const ansBox = el('div', 'ans');
+      ansBox.innerHTML = '<b>Model Answer:</b><br>' + r.model_answer;
+      card.appendChild(ansBox);
+      setScore(r);
+    };
+
+    rev.onclick = async () => {
+      sub.disabled = rev.disabled = true;
+      const r = await post('/api/quiz/theory', { id: q.id, reveal: true });
+      if (r.error) {
+        card.appendChild(el('div', 'err', r.error));
+        return;
+      }
+      ta.disabled = true;
+      actionRow.remove();
+      const ansBox = el('div', 'ans');
+      ansBox.innerHTML = '<b>Model Answer:</b><br>' + r.model_answer;
+      card.appendChild(ansBox);
+    };
+  }
+
+  b.appendChild(card);
+}
+
+$('#nextQ').onclick = nextQ;
+</script>
+{% endblock %}
