@@ -3,8 +3,35 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.environ.get("DATA_DIR", os.path.join(BASE, "data"))
-os.makedirs(DATA_DIR, exist_ok=True)
+IS_VERCEL = bool(os.environ.get("VERCEL"))
+REPO_DATA_DIR = os.path.join(BASE, "data")
+
+if IS_VERCEL:
+    DATA_DIR = os.environ.get("DATA_DIR", "/tmp/data")
+    os.makedirs(DATA_DIR, exist_ok=True)
+    if os.path.exists(REPO_DATA_DIR):
+        import shutil
+        for item in os.listdir(REPO_DATA_DIR):
+            s = os.path.join(REPO_DATA_DIR, item)
+            d = os.path.join(DATA_DIR, item)
+            if not os.path.exists(d) and os.path.isfile(s):
+                try: shutil.copy2(s, d)
+                except Exception: pass
+    KNOWLEDGE_DIR = os.environ.get("KNOWLEDGE_DIR", "/tmp/knowledge")
+    os.makedirs(KNOWLEDGE_DIR, exist_ok=True)
+    if os.path.exists(os.path.join(BASE, "knowledge")):
+        import shutil
+        for cname in os.listdir(os.path.join(BASE, "knowledge")):
+            sdir = os.path.join(BASE, "knowledge", cname)
+            ddir = os.path.join(KNOWLEDGE_DIR, cname)
+            if not os.path.exists(ddir) and os.path.isdir(sdir):
+                try: shutil.copytree(sdir, ddir)
+                except Exception: pass
+else:
+    DATA_DIR = os.environ.get("DATA_DIR", REPO_DATA_DIR)
+    os.makedirs(DATA_DIR, exist_ok=True)
+    KNOWLEDGE_DIR = os.path.join(BASE, "knowledge")
+    os.makedirs(KNOWLEDGE_DIR, exist_ok=True)
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "change-me-in-production")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
@@ -17,9 +44,6 @@ TEACHER_USERNAME = os.environ.get("TEACHER_USERNAME", "teacher")
 TEACHER_PASSWORD = os.environ.get("TEACHER_PASSWORD", "Shaqra@Teacher2026")
 # Optional: only allow these email domains for student signup, e.g. "su.edu.sa,gmail.com" (empty = any domain)
 ALLOWED_EMAIL_DOMAINS = [d.strip().lower() for d in os.environ.get("ALLOWED_EMAIL_DOMAINS", "").split(",") if d.strip()]
-
-KNOWLEDGE_DIR = os.path.join(BASE, "knowledge")
-os.makedirs(KNOWLEDGE_DIR, exist_ok=True)
 
 COURSES = {
     "biostatistics": {

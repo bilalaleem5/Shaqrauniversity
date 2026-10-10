@@ -111,7 +111,8 @@ def conn():
     c = sqlite3.connect(PATH, timeout=30)
     c.row_factory = sqlite3.Row
     c.execute("PRAGMA foreign_keys=ON")
-    c.execute("PRAGMA journal_mode=WAL")
+    if not config.IS_VERCEL:
+        c.execute("PRAGMA journal_mode=WAL")
     return c
 
 def init():

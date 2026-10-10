@@ -14,7 +14,7 @@ app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax",
                   SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "0") == "1",
                   PERMANENT_SESSION_LIFETIME=60 * 60 * 12, MAX_CONTENT_LENGTH=50 * 1024 * 1024)  # 50 MB for uploads
 db.init()
-if config.OPENAI_API_KEY and not config.MOCK_LLM and not os.environ.get("NO_EMBED_THREAD"):
+if config.OPENAI_API_KEY and not config.MOCK_LLM and not os.environ.get("NO_EMBED_THREAD") and not config.IS_VERCEL:
     threading.Thread(target=rag.ensure_embeddings, daemon=True).start()
 
 BATCHES = ["2024", "2025", "2026"]
