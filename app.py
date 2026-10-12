@@ -13,7 +13,7 @@ app.secret_key = config.SECRET_KEY
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=bool(config.IS_VERCEL or os.environ.get("COOKIE_SECURE", "0") == "1"),
+    SESSION_COOKIE_SECURE=False,
     PERMANENT_SESSION_LIFETIME=60 * 60 * 24 * 7,  # 7-day persistent session
     MAX_CONTENT_LENGTH=50 * 1024 * 1024  # 50 MB for uploads
 )
@@ -76,8 +76,9 @@ def current_student():
     s = None
     pk = session.get("pk")
     sid = session.get("student_id")
+    email = session.get("email")
 
-    if pk or sid:
+    if pk or sid or email:
         if pk:
             try: s = db.q("SELECT * FROM students WHERE id=?", (pk,), one=True)
             except Exception: s = None
@@ -86,51 +87,69 @@ def current_student():
                 s = db.q("SELECT * FROM students WHERE lower(student_id)=?", (str(sid).lower(),), one=True)
                 if s: session["pk"] = s["id"]
             except Exception: s = None
+        if not s and email:
+            try:
+                s = db.q("SELECT * FROM students WHERE lower(email)=?", (str(email).lower(),), one=True)
+                if s:
+                    session["pk"] = s["id"]
+                    session["student_id"] = s["student_id"]
+            except Exception: s = None
 
-        # If student exists in cryptographically signed session but not in this serverless instance SQLite:
-        if not s and sid and session.get("name") and session.get("role") == "student":
-            if session.get("status", "active") == "active":
-                try:
-                    db.x(
-                        """INSERT INTO students(student_id, email, name, batch, gender, pw_hash, status, is_demo)
-                           VALUES(?, ?, ?, ?, ?, ?, ?, ?)
-                           ON CONFLICT(student_id) DO UPDATE SET name=excluded.name, status=excluded.status""",
-                        (
-                            str(sid),
-                            session.get("email") or f"{sid}@su.edu.sa",
-                            session.get("name"),
-                            session.get("batch") or "2024",
-                            session.get("gender") or "",
-                            "restored_session",
-                            session.get("status", "active"),
-                            int(session.get("is_demo") or 0)
-                        )
+        # If student exists in signed session but not in this serverless instance SQLite:
+        if not s:
+            student_id_val = str(sid or f"S_{pk or 1001}")
+            email_val = session.get("email") or f"{student_id_val}@su.edu.sa"
+            name_val = session.get("name") or f"Student {student_id_val}"
+            batch_val = session.get("batch") or "2024"
+            gender_val = session.get("gender") or ""
+            status_val = session.get("status", "active")
+            demo_val = int(session.get("is_demo") or 0)
+
+            try:
+                # Try inserting into local SQLite so foreign keys (messages, quiz) succeed
+                db.x(
+                    """INSERT INTO students(student_id, email, name, batch, gender, pw_hash, status, is_demo)
+                       VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+                       ON CONFLICT(student_id) DO UPDATE SET name=excluded.name, status=excluded.status""",
+                    (
+                        student_id_val,
+                        email_val,
+                        name_val,
+                        batch_val,
+                        gender_val,
+                        "restored_session",
+                        status_val,
+                        demo_val
                     )
-                    s = db.q("SELECT * FROM students WHERE lower(student_id)=?", (str(sid).lower(),), one=True)
+                )
+                s = db.q("SELECT * FROM students WHERE lower(student_id)=?", (student_id_val.lower(),), one=True)
+                if s: session["pk"] = s["id"]
+            except Exception as ex:
+                app.logger.warning(f"Could not restore student to local db: {ex}")
+                try:
+                    s = db.q("SELECT * FROM students WHERE lower(email)=?", (email_val.lower(),), one=True)
                     if s: session["pk"] = s["id"]
-                except Exception as ex:
-                    app.logger.warning(f"Could not restore student to local db: {ex}")
+                except Exception:
+                    pass
 
             if not s:
                 s = {
                     "id": pk or 1,
-                    "student_id": str(sid),
-                    "name": session.get("name"),
-                    "email": session.get("email", ""),
-                    "batch": session.get("batch", "2024"),
-                    "gender": session.get("gender", ""),
-                    "status": session.get("status", "active"),
-                    "is_demo": session.get("is_demo", 0)
+                    "student_id": student_id_val,
+                    "name": name_val,
+                    "email": email_val,
+                    "batch": batch_val,
+                    "gender": gender_val,
+                    "status": status_val,
+                    "is_demo": demo_val
                 }
 
         # Check account status & block list
         if s:
-            if s["status"] != "active" or V.is_blocked(s["email"], blocked_patterns()):
+            s = dict(s)
+            if s.get("status") != "active" or (s.get("email") and V.is_blocked(s["email"], blocked_patterns())):
                 s = None
                 session.clear()
-        else:
-            session.pop("pk", None)
-            session.pop("student_id", None)
 
     g.student = s
     return s
@@ -197,6 +216,7 @@ def start_student_session(s):
     session["status"] = s.get("status") or "active"
     session["is_demo"] = int(s.get("is_demo") or 0)
     session["role"] = "student"
+    csrf_token()
     try:
         db.x("UPDATE students SET login_count=login_count+1, last_login=datetime('now') WHERE id=?", (s["id"],))
         db.x("INSERT INTO login_events(student_pk,ip,ua) VALUES(?,?,?)", (s["id"], ip(), (request.headers.get("User-Agent") or "")[:160]))
@@ -295,8 +315,11 @@ def api_chat(course):
     except Exception as e:
         app.logger.exception(e); return jsonify(error="The tutor is temporarily unavailable. Please try again."), 502
     if not intro:
-        db.x("INSERT INTO messages(student_pk,course,question,answer,topic,in_scope) VALUES(?,?,?,?,?,?)",
-             (s["id"], course, text, r["answer"], r["topic"], r["in_scope"]))
+        try:
+            db.x("INSERT INTO messages(student_pk,course,question,answer,topic,in_scope) VALUES(?,?,?,?,?,?)",
+                 (s["id"], course, text, r["answer"], r["topic"], r["in_scope"]))
+        except Exception as e:
+            app.logger.warning(f"Could not save chat message: {e}")
     return jsonify(r)
 
 def _pick_topic(course, topic):

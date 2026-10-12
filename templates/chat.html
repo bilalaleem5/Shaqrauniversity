@@ -243,19 +243,22 @@ function add(role, text, src) {
 const CSRF = document.querySelector('meta[name=csrf]').content;
 
 async function post(u, b) {
-  const r = await fetch(u, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRF': CSRF },
-    body: JSON.stringify(b)
-  });
-  if (r.status === 401) { location = '/login'; return {}; }
-  if (r.status === 400 && !(r.headers.get('content-type') || '').includes('json')) {
-    return { error: 'Session expired. Please reload the page.' };
-  }
   try {
+    const r = await fetch(u, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF': CSRF },
+      credentials: 'same-origin',
+      body: JSON.stringify(b)
+    });
+    if (r.status === 401) {
+      return { error: 'Your session has expired. Please <a href="/login" style="color:var(--primary);text-decoration:underline;font-weight:600">click here to sign in again</a>.' };
+    }
+    if (r.status === 400 && !(r.headers.get('content-type') || '').includes('json')) {
+      return { error: 'Session expired. Please reload the page.' };
+    }
     return await r.json();
   } catch (e) {
-    return { error: 'Unexpected error, please try again.' };
+    return { error: 'Network error or response took too long. Please try again.' };
   }
 }
 

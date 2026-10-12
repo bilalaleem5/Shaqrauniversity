@@ -3,6 +3,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import app, db
 
 def test_session_recovery():
+    db.x("DELETE FROM students WHERE student_id IN ('44990011', '44990022')")
     with app.app.test_client() as c:
         # Get CSRF
         r = c.get('/login')
