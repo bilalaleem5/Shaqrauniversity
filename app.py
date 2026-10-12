@@ -10,9 +10,13 @@ import config, db, rag, analytics, report, validators as V
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 app.secret_key = config.SECRET_KEY
-app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax",
-                  SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "0") == "1",
-                  PERMANENT_SESSION_LIFETIME=60 * 60 * 12, MAX_CONTENT_LENGTH=50 * 1024 * 1024)  # 50 MB for uploads
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=bool(config.IS_VERCEL or os.environ.get("COOKIE_SECURE", "0") == "1"),
+    PERMANENT_SESSION_LIFETIME=60 * 60 * 24 * 7,  # 7-day persistent session
+    MAX_CONTENT_LENGTH=50 * 1024 * 1024  # 50 MB for uploads
+)
 db.init()
 if config.OPENAI_API_KEY and not config.MOCK_LLM and not os.environ.get("NO_EMBED_THREAD") and not config.IS_VERCEL:
     threading.Thread(target=rag.ensure_embeddings, daemon=True).start()
@@ -71,16 +75,80 @@ def current_student():
     if "student" in g: return g.student
     s = None
     pk = session.get("pk")
-    if pk:
-        s = db.q("SELECT * FROM students WHERE id=?", (pk,), one=True)
-        if s and (s["status"] != "active" or V.is_blocked(s["email"], blocked_patterns())): s = None
-        if not s: session.pop("pk", None)
+    sid = session.get("student_id")
+
+    if pk or sid:
+        if pk:
+            try: s = db.q("SELECT * FROM students WHERE id=?", (pk,), one=True)
+            except Exception: s = None
+        if not s and sid:
+            try:
+                s = db.q("SELECT * FROM students WHERE lower(student_id)=?", (str(sid).lower(),), one=True)
+                if s: session["pk"] = s["id"]
+            except Exception: s = None
+
+        # If student exists in cryptographically signed session but not in this serverless instance SQLite:
+        if not s and sid and session.get("name") and session.get("role") == "student":
+            if session.get("status", "active") == "active":
+                try:
+                    db.x(
+                        """INSERT INTO students(student_id, email, name, batch, gender, pw_hash, status, is_demo)
+                           VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+                           ON CONFLICT(student_id) DO UPDATE SET name=excluded.name, status=excluded.status""",
+                        (
+                            str(sid),
+                            session.get("email") or f"{sid}@su.edu.sa",
+                            session.get("name"),
+                            session.get("batch") or "2024",
+                            session.get("gender") or "",
+                            "restored_session",
+                            session.get("status", "active"),
+                            int(session.get("is_demo") or 0)
+                        )
+                    )
+                    s = db.q("SELECT * FROM students WHERE lower(student_id)=?", (str(sid).lower(),), one=True)
+                    if s: session["pk"] = s["id"]
+                except Exception as ex:
+                    app.logger.warning(f"Could not restore student to local db: {ex}")
+
+            if not s:
+                s = {
+                    "id": pk or 1,
+                    "student_id": str(sid),
+                    "name": session.get("name"),
+                    "email": session.get("email", ""),
+                    "batch": session.get("batch", "2024"),
+                    "gender": session.get("gender", ""),
+                    "status": session.get("status", "active"),
+                    "is_demo": session.get("is_demo", 0)
+                }
+
+        # Check account status & block list
+        if s:
+            if s["status"] != "active" or V.is_blocked(s["email"], blocked_patterns()):
+                s = None
+                session.clear()
+        else:
+            session.pop("pk", None)
+            session.pop("student_id", None)
+
     g.student = s
     return s
 
 def current_teacher():
     pk = session.get("teacher")
-    return db.q("SELECT * FROM teachers WHERE id=?", (pk,), one=True) if pk else None
+    if not pk: return None
+    t = None
+    try: t = db.q("SELECT * FROM teachers WHERE id=?", (pk,), one=True)
+    except Exception: pass
+    if not t:
+        tuser = session.get("teacher_user")
+        if tuser:
+            try:
+                t = db.q("SELECT * FROM teachers WHERE lower(username)=?", (str(tuser).lower(),), one=True)
+                if t: session["teacher"] = t["id"]
+            except Exception: pass
+    return t
 
 @app.context_processor
 def inject():
@@ -118,9 +186,22 @@ def course_or_404(c):
     return c
 
 def start_student_session(s):
-    session.clear(); session["pk"] = s["id"]; session.permanent = True
-    db.x("UPDATE students SET login_count=login_count+1, last_login=datetime('now') WHERE id=?", (s["id"],))
-    db.x("INSERT INTO login_events(student_pk,ip,ua) VALUES(?,?,?)", (s["id"], ip(), (request.headers.get("User-Agent") or "")[:160]))
+    s = dict(s)
+    session.permanent = True
+    session["pk"] = s["id"]
+    session["student_id"] = str(s.get("student_id") or "")
+    session["name"] = s.get("name") or ""
+    session["email"] = s.get("email") or ""
+    session["batch"] = s.get("batch") or "2024"
+    session["gender"] = s.get("gender") or ""
+    session["status"] = s.get("status") or "active"
+    session["is_demo"] = int(s.get("is_demo") or 0)
+    session["role"] = "student"
+    try:
+        db.x("UPDATE students SET login_count=login_count+1, last_login=datetime('now') WHERE id=?", (s["id"],))
+        db.x("INSERT INTO login_events(student_pk,ip,ua) VALUES(?,?,?)", (s["id"], ip(), (request.headers.get("User-Agent") or "")[:160]))
+    except Exception:
+        pass
 
 # ------------------------------------------------------------------ landing / role selection
 @app.route("/")
@@ -142,7 +223,7 @@ def login():
         if throttled(key):
             err = "Too many failed attempts. Please wait 10 minutes and try again."
         else:
-            s = db.q("SELECT * FROM students WHERE lower(student_id)=? OR email=?", (ident, ident), one=True)
+            s = db.q("SELECT * FROM students WHERE lower(student_id)=? OR lower(email)=?", (ident, ident), one=True)
             if s and check_password_hash(s["pw_hash"], request.form.get("password", "")):
                 if s["status"] != "active": err = "This account is suspended. Please contact your instructor."
                 elif V.is_blocked(s["email"], blocked_patterns()): err = "This account is not allowed to use the system."
@@ -164,12 +245,23 @@ def register():
         if not err and pw != f.get("password2", ""): err = "The two passwords do not match."
         if not err and V.is_blocked(email, blocked_patterns()): err = "This email address is not allowed. Please contact your instructor."
         if not err and db.q("SELECT 1 FROM students WHERE lower(student_id)=?", (sid.lower(),), one=True): err = "This student ID is already registered. Please log in."
-        if not err and db.q("SELECT 1 FROM students WHERE email=?", (email,), one=True): err = "This email is already registered. Please log in."
+        if not err and db.q("SELECT 1 FROM students WHERE lower(email)=?", (email.lower(),), one=True): err = "This email is already registered. Please log in."
         if not err and not rate_ok(("reg", ip()), limit=15, window=3600): err = "Too many sign-ups from this network. Try again later."
         if not err:
+            gen_val = gender if gender in ("male", "female") else ""
             pk = db.x("INSERT INTO students(student_id,email,name,batch,gender,pw_hash) VALUES(?,?,?,?,?,?)",
-                      (sid, email, name, batch, gender if gender in ("male", "female") else "", generate_password_hash(pw)))
-            start_student_session({"id": pk}); return redirect(url_for("courses"))
+                      (sid, email, name, batch, gen_val, generate_password_hash(pw)))
+            start_student_session({
+                "id": pk,
+                "student_id": sid,
+                "name": name,
+                "email": email,
+                "batch": batch,
+                "gender": gen_val,
+                "status": "active",
+                "is_demo": 0
+            })
+            return redirect(url_for("courses"))
     return render_template("login.html", mode="register", err=err, batches=BATCHES)
 
 @app.route("/logout")
@@ -317,7 +409,11 @@ def teacher_login():
         else:
             t = db.q("SELECT * FROM teachers WHERE username=?", (u,), one=True)
             if t and check_password_hash(t["pw_hash"], request.form.get("password", "")):
-                ok_login(key); session.clear(); session["teacher"] = t["id"]; session.permanent = True
+                ok_login(key); session.clear(); session.permanent = True
+                session["teacher"] = t["id"]
+                session["teacher_user"] = t["username"]
+                session["teacher_name"] = t["name"]
+                session["role"] = "teacher"
                 return redirect(url_for("dashboard"))
             fail(key); err = "Wrong username or password."
     return render_template("t_login.html", err=err)

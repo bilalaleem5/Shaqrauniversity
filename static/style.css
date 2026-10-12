@@ -1167,7 +1167,6 @@ input::placeholder, textarea::placeholder {
   padding: 14px 18px;
   border-radius: 16px;
   line-height: 1.6;
-  white-space: pre-wrap;
   font-size: 14.5px;
   word-break: break-word;
 }
@@ -1177,6 +1176,7 @@ input::placeholder, textarea::placeholder {
   color: #ffffff;
   border-bottom-right-radius: 4px;
   box-shadow: var(--shadow-sm);
+  white-space: pre-wrap;
 }
 
 .m.a {
@@ -1185,6 +1185,165 @@ input::placeholder, textarea::placeholder {
   border: 1px solid var(--border);
   border-bottom-left-radius: 4px;
   box-shadow: var(--shadow-xs);
+  white-space: normal;
+}
+
+/* Formatted elements inside AI Assistant messages */
+.m.a p {
+  margin: 8px 0;
+  line-height: 1.65;
+}
+.m.a p:first-child {
+  margin-top: 0;
+}
+.m.a p:last-child {
+  margin-bottom: 0;
+}
+
+.m.a h1, .m.a h2, .m.a h3, .m.a h4, .m.a h5, .m.a h6 {
+  color: var(--navy-900);
+  margin-top: 16px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.m.a h1:first-child, .m.a h2:first-child, .m.a h3:first-child, .m.a h4:first-child {
+  margin-top: 0;
+}
+.m.a h1 { font-size: 19px; }
+.m.a h2 { font-size: 17px; }
+.m.a h3 { font-size: 15.5px; border-bottom: 1px solid var(--slate-100); padding-bottom: 4px; }
+.m.a h4 { font-size: 14.5px; }
+
+.m.a ul, .m.a ol {
+  margin: 8px 0 10px;
+  padding-left: 22px;
+  line-height: 1.65;
+}
+.m.a li {
+  margin-bottom: 4px;
+}
+.m.a li > ul, .m.a li > ol {
+  margin: 4px 0 6px;
+}
+
+.m.a strong, .m.a b {
+  color: var(--navy-950);
+  font-weight: 700;
+}
+
+/* Beautiful responsive tables (e.g. 2x2 contingency tables, biostats data) */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  margin: 14px 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  box-shadow: var(--shadow-xs);
+}
+
+.m.a table, .ans table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  text-align: left;
+}
+
+.m.a th, .ans th {
+  background: var(--navy-50);
+  color: var(--navy-900);
+  font-weight: 700;
+  padding: 10px 14px;
+  border-bottom: 1.5px solid var(--border);
+  border-right: 1px solid var(--border-subtle);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+}
+.m.a th:last-child, .ans th:last-child {
+  border-right: none;
+}
+
+.m.a td, .ans td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  color: var(--text-body);
+}
+.m.a td:last-child, .ans td:last-child {
+  border-right: none;
+}
+
+.m.a tr:last-child td, .ans tr:last-child td {
+  border-bottom: none;
+}
+
+.m.a tr:nth-child(even) td, .ans tr:nth-child(even) td {
+  background: #fbfcfe;
+}
+
+.m.a tr:hover td, .ans tr:hover td {
+  background: var(--navy-50);
+}
+
+/* Code blocks & formulas */
+.m.a code, .ans code {
+  background: var(--slate-100);
+  color: var(--navy-800);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12.5px;
+  font-weight: 500;
+  border: 1px solid var(--border-subtle);
+}
+
+.m.a pre, .ans pre {
+  background: var(--navy-950);
+  color: #e2e8f0;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  font-size: 13px;
+  margin: 12px 0;
+  line-height: 1.5;
+  border: 1px solid var(--navy-800);
+}
+.m.a pre code, .ans pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border: none;
+  font-size: inherit;
+}
+
+/* KaTeX equations */
+.m.a .katex-display, .ans .katex-display {
+  margin: 14px 0 !important;
+  padding: 8px 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #fdfefe;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-subtle);
+}
+.m.a .katex, .ans .katex {
+  font-size: 1.05em;
+}
+
+.m.a blockquote {
+  border-left: 3px solid var(--teal-500);
+  margin: 10px 0;
+  padding: 6px 14px;
+  background: var(--teal-50);
+  color: var(--slate-700);
+  border-radius: 0 6px 6px 0;
+}
+
+.m.a hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 14px 0;
 }
 
 .sources-box {
@@ -1356,7 +1515,7 @@ input::placeholder, textarea::placeholder {
   border-radius: var(--radius-md);
   padding: 16px 20px;
   margin-top: 14px;
-  white-space: pre-wrap;
+  white-space: normal;
   line-height: 1.6;
   font-size: 14px;
   color: var(--navy-950);

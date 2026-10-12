@@ -136,6 +136,78 @@ const C = "{{ course }}";
 const $ = s => document.querySelector(s);
 let hist = [];
 
+function renderContent(rawText) {
+  if (!rawText) return '';
+  let str = String(rawText);
+
+  // 1. Extract LaTeX formulas and replace with placeholders
+  const mathItems = [];
+  const addMath = (code, isDisplay) => {
+    const key = `@@MATH_${isDisplay ? 'BLOCK' : 'INLINE'}_${mathItems.length}@@`;
+    mathItems.push({ key, code: code.trim(), isDisplay });
+    return key;
+  };
+
+  // Display math: $$...$$ and \[...\]
+  str = str.replace(/\$\$([\s\S]*?)\$\$/g, (m, expr) => addMath(expr, true));
+  str = str.replace(/\\\[([\s\S]*?)\\\]/g, (m, expr) => addMath(expr, true));
+
+  // Inline math: \(...\) and $...$
+  str = str.replace(/\\\(([\s\S]*?)\\\)/g, (m, expr) => addMath(expr, false));
+  str = str.replace(/(^|[^\\])\$([^\$\n\r]+?)\$/g, (m, prefix, expr) => {
+    if (/^\s*\d+([.,]\d+)?\s*$/.test(expr)) return m;
+    return prefix + addMath(expr, false);
+  });
+
+  // 2. Parse Markdown
+  let html = '';
+  if (window.marked && typeof window.marked.parse === 'function') {
+    window.marked.setOptions({
+      gfm: true,
+      breaks: true
+    });
+    html = window.marked.parse(str);
+  } else {
+    const tmp = document.createElement('div');
+    tmp.textContent = str;
+    html = tmp.innerHTML.replace(/\n/g, '<br>');
+  }
+
+  // 3. Sanitize HTML
+  if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+    html = window.DOMPurify.sanitize(html);
+  }
+
+  // 4. Render KaTeX math into placeholders
+  for (const item of mathItems) {
+    let renderedMath = '';
+    if (window.katex && typeof window.katex.renderToString === 'function') {
+      try {
+        renderedMath = window.katex.renderToString(item.code, {
+          displayMode: item.isDisplay,
+          throwOnError: false
+        });
+      } catch (e) {
+        renderedMath = item.isDisplay ? `<pre class="math-raw">\\[${item.code}\\]</pre>` : `<code class="math-raw">\\(${item.code}\\)</code>`;
+      }
+    } else {
+      renderedMath = item.isDisplay ? `<div class="math-raw">\\[${item.code}\\]</div>` : `<span class="math-raw">\\(${item.code}\\)</span>`;
+    }
+
+    const pWrapped = `<p>${item.key}</p>`;
+    if (item.isDisplay && html.includes(pWrapped)) {
+      html = html.replace(pWrapped, renderedMath);
+    } else {
+      html = html.split(item.key).join(renderedMath);
+    }
+  }
+
+  // 5. Wrap tables for responsive horizontal scrolling
+  html = html.replace(/(<table[\s\S]*?<\/table>)/g, '<div class="table-responsive">$1</div>');
+
+  return html;
+}
+
 function add(role, text, src) {
   const row = document.createElement('div');
   row.className = 'msg-row ' + (role === 'user' ? 'u' : 'a');
@@ -148,7 +220,12 @@ function add(role, text, src) {
   const bubble = document.createElement('div');
   bubble.className = 'm ' + (role === 'user' ? 'u' : 'a');
   bubble.dir = 'auto';
-  bubble.textContent = text;
+
+  if (role === 'user') {
+    bubble.textContent = text;
+  } else {
+    bubble.innerHTML = renderContent(text);
+  }
 
   if (src && src.length) {
     const sBox = document.createElement('div');
@@ -295,10 +372,11 @@ async function nextQ() {
   metaRow.appendChild(pKind);
   card.appendChild(metaRow);
 
-  const qText = el('h3', '', q.question);
+  const qText = el('h3', '');
   qText.style.fontSize = '16.5px';
   qText.style.fontWeight = '600';
   qText.style.marginBottom = '18px';
+  qText.innerHTML = renderContent(q.question);
   card.appendChild(qText);
 
   if (q.kind === 'mcq') {
@@ -306,7 +384,8 @@ async function nextQ() {
     q.options.forEach((o, i) => {
       const optBtn = el('button', 'opt');
       const prefix = el('span', 'opt-prefix', String.fromCharCode(65 + i));
-      const optLabel = el('span', '', o);
+      const optLabel = el('span', '');
+      optLabel.innerHTML = renderContent(o);
       optBtn.appendChild(prefix);
       optBtn.appendChild(optLabel);
 
@@ -323,7 +402,7 @@ async function nextQ() {
           optBtn.classList.add('no');
         }
         const fb = el('div', 'fb ' + (r.correct ? 'ok' : 'no'));
-        fb.innerHTML = `<b>${r.correct ? '✓ Correct!' : '✕ Not quite.'}</b> ${r.explanation || ''}`;
+        fb.innerHTML = `<b>${r.correct ? '✓ Correct!' : '✕ Not quite.'}</b> ${renderContent(r.explanation || '')}`;
         card.appendChild(fb);
         setScore(r);
       };
@@ -332,7 +411,7 @@ async function nextQ() {
     card.appendChild(optContainer);
   } else if (q.kind === 'study') {
     const ansBox = el('div', 'ans');
-    ansBox.innerHTML = '<b>Model Answer:</b><br>' + q.model_answer;
+    ansBox.innerHTML = '<b>Model Answer:</b><br>' + renderContent(q.model_answer);
     card.appendChild(ansBox);
   } else {
     const ta = el('textarea', 'big');
@@ -360,10 +439,10 @@ async function nextQ() {
       ta.disabled = true;
       actionRow.remove();
       const fb = el('div', 'fb ' + (r.correct ? 'ok' : 'no'));
-      fb.innerHTML = `<b>Score: ${r.score}%</b> &middot; ${r.feedback}`;
+      fb.innerHTML = `<b>Score: ${r.score}%</b> &middot; ${renderContent(r.feedback)}`;
       card.appendChild(fb);
       const ansBox = el('div', 'ans');
-      ansBox.innerHTML = '<b>Model Answer:</b><br>' + r.model_answer;
+      ansBox.innerHTML = '<b>Model Answer:</b><br>' + renderContent(r.model_answer);
       card.appendChild(ansBox);
       setScore(r);
     };
@@ -378,7 +457,7 @@ async function nextQ() {
       ta.disabled = true;
       actionRow.remove();
       const ansBox = el('div', 'ans');
-      ansBox.innerHTML = '<b>Model Answer:</b><br>' + r.model_answer;
+      ansBox.innerHTML = '<b>Model Answer:</b><br>' + renderContent(r.model_answer);
       card.appendChild(ansBox);
     };
   }

@@ -12,6 +12,8 @@ if IS_VERCEL:
     if os.path.exists(REPO_DATA_DIR):
         import shutil
         for item in os.listdir(REPO_DATA_DIR):
+            if item.endswith((".db-wal", ".db-shm", ".db-journal")):
+                continue
             s = os.path.join(REPO_DATA_DIR, item)
             d = os.path.join(DATA_DIR, item)
             if not os.path.exists(d) and os.path.isfile(s):
@@ -33,7 +35,7 @@ else:
     KNOWLEDGE_DIR = os.path.join(BASE, "knowledge")
     os.makedirs(KNOWLEDGE_DIR, exist_ok=True)
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "change-me-in-production")
+SECRET_KEY = os.environ.get("SECRET_KEY", "shaqra-academic-tutor-secret-key-2026-v2")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 CHAT_MODEL = os.environ.get("OPENAI_CHAT_MODEL", "gpt-4o-mini")
 EMBED_MODEL = os.environ.get("OPENAI_EMBED_MODEL", "text-embedding-3-small")

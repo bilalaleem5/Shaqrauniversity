@@ -169,8 +169,9 @@ def answer(course, question, history=None, intro=False):
         f"2. If the question cannot be answered from the course material (or is unrelated to the course), reply with "
         f"{OOS} followed by one short friendly sentence saying it is outside this course and suggesting what you can "
         "help with. Greetings and thanks are fine to answer normally.\n"
-        "3. Reply in the same language the student used (English or Arabic). Keep answers clear, short and "
-        "student-level; use short steps or bullet points when helpful.\n"
+        "3. Reply in the same language the student used (English or Arabic). Keep answers clear, structured and "
+        "student-level; use clear subheadings (###), bullet points, standard Markdown tables for data/contingency tables, "
+        "and standard LaTeX ($...$ or $$...$$) for formulas when helpful.\n"
         "4. Mention which lecture/file the information comes from when it helps.\n"
         + ("5. The student asked for a short introduction to the course: give the course aim, main topics and how you "
            "can help (explain concepts, practice questions, quizzes). Offer to start with a first topic.\n" if intro else "")
