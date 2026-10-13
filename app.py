@@ -1,11 +1,11 @@
 import os, csv, io, time, json, secrets, hmac, random, string, threading, re
 from collections import defaultdict, deque
 from functools import wraps
-from flask import (Flask, render_template, request, redirect, url_for, session, jsonify, abort, Response, flash, g)
+from flask import (Flask, render_template, request, redirect, url_for, session, jsonify, abort, Response, flash, g, send_file)
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
-import config, db, rag, analytics, report, validators as V
+import config, db, rag, analytics, report, validators as V, study_guide
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
@@ -292,14 +292,45 @@ def logout():
 @app.route("/courses")
 @student_required
 def courses():
-    return render_template("courses.html")
+    guides = study_guide.get_all_guides()
+    return render_template("courses.html", guides=guides)
+
+@app.route("/guide/<course>")
+@student_required
+def guide(course):
+    course_or_404(course)
+    courses = _all_courses()
+    g_data = study_guide.get_guide(course)
+    if not g_data:
+        abort(404, "Study guide not available for this course.")
+    return render_template("guide.html", course=course, cfg=courses[course], guide=g_data, guide_items=g_data.get("items", []))
+
+@app.route("/guide/<course>/download")
+@student_required
+def guide_download(course):
+    course_or_404(course)
+    fpath, fname = study_guide.get_guide_file_path(course)
+    if not fpath or not os.path.exists(fpath):
+        abort(404, "Study guide file not found.")
+    return send_file(fpath, as_attachment=True, download_name=fname)
+
+@app.route("/api/guide/<course>")
+@student_required
+def api_guide(course):
+    course_or_404(course)
+    g_data = study_guide.get_guide(course)
+    if not g_data:
+        return jsonify(error="Not found"), 404
+    return jsonify(g_data)
 
 @app.route("/chat/<course>")
 @student_required
 def chat(course):
     course_or_404(course)
     courses = _all_courses()
-    return render_template("chat.html", course=course, cfg=courses[course], topics=rag.topics(course))
+    g_data = study_guide.get_guide(course)
+    prompt = request.args.get("prompt", "").strip()
+    return render_template("chat.html", course=course, cfg=courses[course], topics=rag.topics(course), guide=g_data, initial_prompt=prompt)
 
 @app.route("/api/chat/<course>", methods=["POST"])
 @student_required

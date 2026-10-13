@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block title %}{{ guide.guide_title }} ({{ cfg.code }}) - Interactive Study Guide{% endblock %}
+
+{% block nav %}
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+  <span class="pill navy" style="font-size:12px">
+    <b>{{ cfg.code }}</b> &middot; Study Guide
+  </span>
+  <a class="btn green sm" href="/guide/{{ course }}/download" title="Download original study guide file">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+    <span>Download {{ guide.file_type }} ({{ guide.file_size }})</span>
+  </a>
+  <a class="btn alt sm" href="/chat/{{ course }}" title="Ask questions to the AI Tutor">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </a>
+  <a class="btn alt sm" href="/courses">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    <span>Courses</span>
+  </a>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="wrap" style="max-width:1000px">
+  
+  <!-- Hero Banner -->
+  <div class="guide-hero-card">
+    <div class="guide-hero-main">
+      <div class="guide-badge-row">
+        <span class="pill good" style="font-size:11.5px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Official Faculty Curriculum
+        </span>
+        <span class="pill navy" style="font-size:11.5px">{{ cfg.code }} &middot; {{ cfg.program }}</span>
+      </div>
+      <h1 class="guide-hero-title">{{ guide.guide_title }}</h1>
+      <p class="guide-hero-sub">{{ guide.subtitle }}</p>
+      
+      <div class="guide-meta-bar">
+        <span>Instructor: <b>{{ guide.instructor }}</b></span>
+        <span class="meta-dot">&middot;</span>
+        <span>Format: <b>Interactive Digital + Downloadable {{ guide.file_type }}</b></span>
+        <span class="meta-dot">&middot;</span>
+        <span><b>20 High-Yield Exam Concepts</b></span>
+      </div>
+    </div>
+
+    <div class="guide-hero-actions">
+      <a href="/guide/{{ course }}/download" class="btn green lg" style="width:100%;justify-content:center;box-shadow:0 4px 14px rgba(16,185,129,0.35)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>Download {{ guide.file_type }} ({{ guide.file_size }})</span>
+      </a>
+      <a href="/chat/{{ course }}" class="btn alt lg" style="width:100%;justify-content:center;margin-top:10px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span>Practice with AI Tutor</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Interactive Control Bar: Search & Progress -->
+  <div class="guide-toolbar">
+    <div class="guide-search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" id="guideSearch" placeholder="Search concepts, formulas, keywords (e.g. median, odds ratio, excel)..." oninput="filterGuide()">
+      <button id="clearSearch" class="btn-clear hide" onclick="clearSearchFilter()">&times;</button>
+    </div>
+
+    <div class="guide-progress-box">
+      <div class="guide-progress-label">
+        <span>Mastery Progress:</span>
+        <b id="progressCount">0 / 20</b>
+        <span class="muted" id="progressPct">(0%)</span>
+      </div>
+      <div class="guide-progress-track">
+        <div class="guide-progress-bar" id="progressBar" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Concept Cards Container -->
+  <div class="guide-cards-grid" id="guideCards">
+    {% for item in guide_items or guide['items'] %}
+    <div class="guide-card" id="card-{{ item.id }}" data-id="{{ item.id }}" data-search="{{ item.title|lower }} {{ item.concept_text|lower }} {{ item.question|lower }}">
+      
+      <!-- Card Top Header -->
+      <div class="guide-card-header">
+        <div class="guide-card-title-group">
+          <span class="guide-num-badge">Concept {{ item.number }}</span>
+          <h2 class="guide-card-title">{{ item.title }}</h2>
+        </div>
+        
+        <label class="mastered-toggle" title="Mark this concept as mastered">
+          <input type="checkbox" onchange="toggleMastered('{{ course }}', {{ item.id }}, this.checked)">
+          <span class="mastered-label">Mastered</span>
+          <span class="custom-checkbox">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </span>
+        </label>
+      </div>
+
+      <!-- Core Concept Box -->
+      <div class="guide-concept-box">
+        <div class="guide-concept-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span>Key Course Principle</span>
+        </div>
+        <p class="guide-concept-text">{{ item.concept_text }}</p>
+      </div>
+
+      <!-- Practice Question Box -->
+      <div class="guide-question-box">
+        <div class="guide-question-tag">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          <span>Exam Practice Scenario</span>
+        </div>
+        <h3 class="guide-question-text">{{ item.question }}</h3>
+
+        <!-- Interactive Options -->
+        <div class="guide-options-list">
+          {% for opt in item.options %}
+          {% set opt_letter = loop.index0|string %}
+          <button type="button" class="guide-opt-btn" onclick="checkGuideAnswer(this, {{ item.id }}, {{ loop.index0 }}, {{ item.correct_idx }})">
+            <span class="guide-opt-letter">{{ ["A", "B", "C", "D"][loop.index0] }}</span>
+            <span class="guide-opt-text">{{ opt }}</span>
+          </button>
+          {% endfor %}
+        </div>
+
+        <!-- Explanation & Answer Revealed on Click -->
+        <div class="guide-expl-box hide" id="expl-{{ item.id }}">
+          <div class="guide-expl-header">
+            <span class="guide-expl-badge">✓ Official Answer: Option {{ item.answer_letter }}</span>
+          </div>
+          <p class="guide-expl-text">{{ item.explanation }}</p>
+        </div>
+      </div>
+
+      <!-- Card Action Footer -->
+      <div class="guide-card-footer">
+        <button type="button" class="btn alt sm" onclick="toggleExplanation({{ item.id }})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <span id="btnExplText-{{ item.id }}">Show Explanation</span>
+        </button>
+
+        <a href="/chat/{{ course }}?prompt={{ ('Can you please explain Concept ' ~ item.number ~ ': ' ~ item.title ~ ' in simple terms with an example?')|urlencode }}" class="btn alt sm ai-ask-btn" title="Ask AI Tutor for deeper explanation">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>Ask AI Tutor about this</span>
+        </a>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Empty Search Results -->
+  <div class="card hide" id="noSearchResults" style="text-align:center;padding:40px 20px;margin-top:20px">
+    <div style="font-size:32px;margin-bottom:12px">🔍</div>
+    <h3>No concepts matched your search</h3>
+    <p class="muted">Try different keywords or clear the search to see all 20 curriculum concepts.</p>
+    <button class="btn alt sm" onclick="clearSearchFilter()" style="margin-top:10px">Clear Filter</button>
+  </div>
+
+</div>
+
+<script>
+const COURSE = "{{ course }}";
+const STORAGE_KEY = 'mastered_guide_' + COURSE;
+
+// Load mastered from localStorage
+function getMastered() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function updateProgress() {
+  const mastered = getMastered();
+  const total = 20;
+  const count = mastered.length;
+  const pct = Math.round((count / total) * 100);
+  
+  document.getElementById('progressCount').textContent = count + ' / ' + total;
+  document.getElementById('progressPct').textContent = '(' + pct + '%)';
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  // Mark checkboxes
+  document.querySelectorAll('.guide-card').forEach(card => {
+    const id = parseInt(card.dataset.id, 10);
+    const cb = card.querySelector('.mastered-toggle input');
+    if (cb) {
+      cb.checked = mastered.includes(id);
+      card.classList.toggle('is-mastered', mastered.includes(id));
+    }
+  });
+}
+
+function toggleMastered(course, id, checked) {
+  let mastered = getMastered();
+  if (checked) {
+    if (!mastered.includes(id)) mastered.push(id);
+  } else {
+    mastered = mastered.filter(x => x !== id);
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(mastered));
+  updateProgress();
+}
+
+function checkGuideAnswer(btn, itemId, chosenIdx, correctIdx) {
+  const card = document.getElementById('card-' + itemId);
+  const btns = card.querySelectorAll('.guide-opt-btn');
+  btns.forEach(b => b.disabled = true);
+
+  if (chosenIdx === correctIdx) {
+    btn.classList.add('correct');
+  } else {
+    btn.classList.add('incorrect');
+    btns[correctIdx].classList.add('correct');
+  }
+
+  // Auto-reveal explanation
+  const expl = document.getElementById('expl-' + itemId);
+  expl.classList.remove('hide');
+  document.getElementById('btnExplText-' + itemId).textContent = 'Hide Explanation';
+}
+
+function toggleExplanation(itemId) {
+  const expl = document.getElementById('expl-' + itemId);
+  const isHidden = expl.classList.contains('hide');
+  expl.classList.toggle('hide', !isHidden);
+  document.getElementById('btnExplText-' + itemId).textContent = isHidden ? 'Hide Explanation' : 'Show Explanation';
+}
+
+function filterGuide() {
+  const q = document.getElementById('guideSearch').value.trim().toLowerCase();
+  const clearBtn = document.getElementById('clearSearch');
+  clearBtn.classList.toggle('hide', !q);
+
+  let visibleCount = 0;
+  document.querySelectorAll('.guide-card').forEach(card => {
+    const text = card.dataset.search || '';
+    const match = !q || text.includes(q);
+    card.classList.toggle('hide', !match);
+    if (match) visibleCount++;
+  });
+
+  document.getElementById('noSearchResults').classList.toggle('hide', visibleCount > 0);
+}
+
+function clearSearchFilter() {
+  document.getElementById('guideSearch').value = '';
+  filterGuide();
+}
+
+// Initial initialization
+document.addEventListener('DOMContentLoaded', updateProgress);
+updateProgress();
+</script>
+{% endblock %}

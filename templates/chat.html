@@ -6,6 +6,16 @@
   <span class="pill navy" style="font-size:12px">
     <b>{{ cfg.code }}</b> &middot; {{ cfg.title }}
   </span>
+  {% if guide %}
+  <a class="btn green sm" href="/guide/{{ course }}" title="Open Interactive Study Guide">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+    Study Guide
+  </a>
+  <a class="btn alt sm" href="/guide/{{ course }}/download" title="Download official {{ guide.file_type }} file">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+    Download {{ guide.file_type }}
+  </a>
+  {% endif %}
   <a class="btn alt sm" href="/feedback" title="Submit feedback or report issue">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="12" cy="11" r="1"></circle><circle cx="16" cy="11" r="1"></circle><circle cx="8" cy="11" r="1"></circle></svg>
     Feedback
@@ -32,6 +42,16 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
       Practice &amp; Quizzes
     </button>
+    {% if guide %}
+    <a href="/guide/{{ course }}" class="tabbar-link" title="Open Interactive 20-Concept Study Guide">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      Study Guide (20 Concepts)
+    </a>
+    <a href="/guide/{{ course }}/download" class="tabbar-link tabbar-dl" title="Download official {{ guide.file_type }} file">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Download {{ guide.file_type }}
+    </a>
+    {% endif %}
   </div>
 
   <!-- Chat Pane -->
@@ -54,6 +74,11 @@
     </div>
 
     <div class="chips">
+      {% if guide %}
+      <a href="/guide/{{ course }}" class="chip chip-guide" style="text-decoration:none;background:var(--navy-800);color:#ffffff;border-color:var(--navy-700)">
+        📖 20 Exam Study Concepts
+      </a>
+      {% endif %}
       <span class="chip" id="intro">📖 Introduce Course</span>
       {% if course=='biostatistics' %}
       <span class="chip" data-q="How do I calculate the mean and standard deviation in Excel?">📊 Mean &amp; SD in Excel</span>
@@ -314,6 +339,14 @@ document.querySelectorAll('[data-q]').forEach(c => c.onclick = () => ask(c.datas
 
 // Initial greeting
 add('a', 'Hello! I am your AI academic tutor for {{ cfg.title }}. Ask me any question from your lecture slides and syllabus, or switch to the Practice & Quizzes tab to test your mastery.');
+
+const initPrompt = {{ initial_prompt|tojson }};
+if (initPrompt) {
+  setTimeout(() => {
+    $('#inp').value = initPrompt;
+    ask(initPrompt);
+  }, 350);
+}
 
 // Tab switching
 function tab(toQuiz) {

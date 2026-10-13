@@ -42,14 +42,20 @@
 
   <div class="grid g2" style="margin-top:20px">
     {% for k, c in COURSES.items() %}
-    <a class="course-card" href="/chat/{{ k }}">
+    {% set g = guides.get(k) if guides else None %}
+    <div class="course-card">
       <div>
         <div class="course-header">
           <span class="course-code-badge">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             {{ c.code }}
           </span>
-          <span class="pill good">Active Term</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            {% if g %}
+            <span class="pill good" style="font-size:11px">📖 20 Exam Concepts</span>
+            {% endif %}
+            <span class="pill navy" style="font-size:11px">Active Term</span>
+          </div>
         </div>
 
         <h2 class="course-title">{{ c.title }}</h2>
@@ -60,7 +66,7 @@
           {{ c.desc }}
           {% elif k == 'biostatistics' %}
           Master descriptive statistics, probability distributions, hypothesis testing, t-tests, ANOVA, and step-by-step calculations with Microsoft Excel.
-          {% elif k == 'research_methods' %}
+          {% elif k == 'pharmacoepi' %}
           Learn epidemiological study designs, odds ratios, relative risk, PubMed literature searching strategies, and research evaluation.
           {% else %}
           Interactive AI study companion grounded in the official lecture slides and curriculum materials for {{ c.title }}.
@@ -68,6 +74,9 @@
         </p>
 
         <div class="course-tags">
+          {% if g %}
+          <span class="pill good" style="font-weight:600">📥 Official Study Guide</span>
+          {% endif %}
           <span class="pill">🎯 Practice MCQ</span>
           <span class="pill">✍️ Theory Exam</span>
           <span class="pill">📚 Lecture Slides</span>
@@ -75,11 +84,26 @@
         </div>
       </div>
 
-      <div class="course-footer">
-        <span>Launch AI Tutor Room</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      <div class="course-card-actions">
+        <a href="/chat/{{ k }}" class="btn lg course-main-btn" style="width:100%;justify-content:center">
+          <span>Launch AI Tutor Room</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+
+        {% if g %}
+        <div class="course-sub-actions">
+          <a href="/guide/{{ k }}" class="btn alt sm" style="flex:1;justify-content:center" title="Open Interactive 20-Concept Study Guide">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <span>Interactive Guide</span>
+          </a>
+          <a href="/guide/{{ k }}/download" class="btn green sm" style="justify-content:center" title="Download original {{ g.file_type }} file">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download ({{ g.file_type }})</span>
+          </a>
+        </div>
+        {% endif %}
       </div>
-    </a>
+    </div>
     {% endfor %}
   </div>
 

@@ -1,0 +1,770 @@
+{
+  "biostatistics": {
+    "course_key": "biostatistics",
+    "title": "Biostatistics (MEDI 1201)",
+    "guide_title": "Biostatistics Official Study Guide",
+    "subtitle": "20 Core Statistical Concepts & 20 Exam Practice Questions",
+    "program": "PharmD, College of Pharmacy, Shaqra University",
+    "instructor": "Dr. Abdul Mohsen Alrohaimi",
+    "filename": "Biostatistics_Study_Guide.pdf",
+    "file_type": "PDF",
+    "file_size": "2.3 MB",
+    "download_url": "/guide/biostatistics/download",
+    "items": [
+      {
+        "id": 1,
+        "number": "01",
+        "title": "Descriptive Statistics",
+        "concept_text": "Summarize observed data with means, medians, percentages, tables and graphs; they describe only the group studied.",
+        "question": "A pharmacist averages the ages of the 60 patients seen in one week, only to describe them. What type of statistics is this?",
+        "options": [
+          "Inferential statistics",
+          "Descriptive statistics",
+          "Probability sampling",
+          "Experimental research"
+        ],
+        "correct_idx": 1,
+        "answer_letter": "B",
+        "explanation": "The average summarizes the patients observed."
+      },
+      {
+        "id": 2,
+        "number": "02",
+        "title": "Inferential Statistics",
+        "concept_text": "Use sample data to estimate population characteristics or test claims, accounting for sampling variability; a biased sample misleads.",
+        "question": "A researcher studies 250 patients to estimate medication adherence among all patients at a hospital. Which type of statistics is used?",
+        "options": [
+          "Descriptive statistics",
+          "Data organization",
+          "Inferential statistics",
+          "Frequency counting"
+        ],
+        "correct_idx": 2,
+        "answer_letter": "C",
+        "explanation": "The sample estimates adherence in the larger population."
+      },
+      {
+        "id": 3,
+        "number": "03",
+        "title": "Population and Sample",
+        "concept_text": "A population is everyone in the research question; a sample is the selected members. A population value is a parameter, a sample value a statistic.",
+        "question": "A university has 8,400 students; a researcher selects 140 to study sleeping habits. Which statement is correct?",
+        "options": [
+          "Population is 140, sample is 8,400",
+          "Both are 140",
+          "Population is 8,540",
+          "Population is 8,400, sample is 140"
+        ],
+        "correct_idx": 3,
+        "answer_letter": "D",
+        "explanation": "All 8,400 form the population; the 140 form the sample."
+      },
+      {
+        "id": 4,
+        "number": "04",
+        "title": "Steps in Handling Data",
+        "concept_text": "Collect with consistent procedures, organize and check, summarize, analyze, then interpret against the question and the study's limits.",
+        "question": "Which sequence best describes the handling of statistical data?",
+        "options": [
+          "Collect → Organize → Summarize → Analyze → Conclude",
+          "Analyze → Collect → Organize → Summarize → Conclude",
+          "Summarize → Organize → Collect → Conclude → Analyze",
+          "Collect → Conclude → Analyze → Organize → Summarize"
+        ],
+        "correct_idx": 0,
+        "answer_letter": "A",
+        "explanation": "Collected, organized, summarized, analyzed, then interpreted."
+      },
+      {
+        "id": 5,
+        "number": "05",
+        "title": "Data Sets, Variables, Observations",
+        "concept_text": "A data set organizes information on study individuals; a variable is a characteristic; one individual's recorded value is an observation. Rows are individuals, columns are variables.",
+        "question": "A spreadsheet has one row per patient and columns for age, blood group and body weight. Which statement is correct?",
+        "options": [
+          "Blood group is an observation; the spreadsheet is one variable",
+          "The spreadsheet is a data set, age is a variable, one patient's age is an observation",
+          "Each patient is a variable; body weight is a population",
+          "Only numerical columns can belong to a data set"
+        ],
+        "correct_idx": 1,
+        "answer_letter": "B",
+        "explanation": "Age is the characteristic; a patient's age is its recorded value."
+      },
+      {
+        "id": 6,
+        "number": "06",
+        "title": "Measurement Scales",
+        "concept_text": "Nominal names categories; ordinal ranks them; interval has equal steps but no true zero; ratio has a true zero. 80 kg is twice 40 kg, but 40°C is not twice 20°C.",
+        "question": "Which option correctly matches each variable with its scale?",
+        "options": [
+          "Blood group: ordinal; pain: nominal; °C: ratio; weight: interval",
+          "Blood group: ratio; pain: interval; °C: nominal; weight: ordinal",
+          "Blood group: nominal; pain: ordinal; °C: interval; weight: ratio",
+          "Blood group: interval; pain: ratio; °C: ordinal; weight: nominal"
+        ],
+        "correct_idx": 2,
+        "answer_letter": "C",
+        "explanation": "Nominal, ordinal, interval, ratio, respectively."
+      },
+      {
+        "id": 7,
+        "number": "07",
+        "title": "Grouped Frequency Distributions",
+        "concept_text": "Numerical values are combined into mutually exclusive intervals that cover every value, with a count per interval. Easier to read, but exact values are hidden.",
+        "question": "A table summarizes ages using intervals 20–<30, 30–<40 and 40–<50. What type of distribution is this?",
+        "options": [
+          "Categorical",
+          "Ungrouped",
+          "Nominal",
+          "Grouped"
+        ],
+        "correct_idx": 3,
+        "answer_letter": "D",
+        "explanation": "Numerical ages are combined into class intervals."
+      },
+      {
+        "id": 8,
+        "number": "08",
+        "title": "Class Width",
+        "concept_text": "Estimate width as (maximum − minimum) ÷ number of classes, then adjust so classes cover all data without overlapping.",
+        "question": "The smallest observation is 12 and the largest is 52, with five classes. What is the estimated class width?",
+        "options": [
+          "8",
+          "10",
+          "40",
+          "64"
+        ],
+        "correct_idx": 0,
+        "answer_letter": "A",
+        "explanation": "(52 − 12) ÷ 5 = 40 ÷ 5 = 8."
+      },
+      {
+        "id": 9,
+        "number": "09",
+        "title": "Relative and Cumulative Frequency",
+        "concept_text": "Relative frequency is class frequency ÷ total. Cumulative frequency is a running total. Relative frequencies sum to 100%; the last cumulative value equals n.",
+        "question": "Four classes have frequencies 4, 9, 12 and 5. Find the relative frequency of the third class and the cumulative frequency up to it.",
+        "options": [
+          "12% and 12",
+          "40% and 25",
+          "30% and 21",
+          "40% and 30"
+        ],
+        "correct_idx": 1,
+        "answer_letter": "B",
+        "explanation": "n = 30; 12 ÷ 30 = 40%; 4 + 9 + 12 = 25."
+      },
+      {
+        "id": 10,
+        "number": "10",
+        "title": "Histograms",
+        "concept_text": "Adjacent bars over class intervals; with equal widths, bar height is frequency, so the tallest bar is the most frequent class.",
+        "question": "Frequencies are 3 (10–<20), 8 (20–<30), 14 (30–<40) and 5 (40–<50). Which interval has the tallest bar?",
+        "options": [
+          "10–<20",
+          "20–<30",
+          "30–<40",
+          "40–<50"
+        ],
+        "correct_idx": 2,
+        "answer_letter": "C",
+        "explanation": "Its frequency of 14 is the highest."
+      },
+      {
+        "id": 11,
+        "number": "11",
+        "title": "Population Mean",
+        "concept_text": "μ = ΣX ÷ N. It is the balance point of the data and is sensitive to unusually large or small values.",
+        "question": "The entire population is 6, 8, 10 and 12. What is the population mean?",
+        "options": [
+          "8",
+          "10",
+          "12",
+          "9"
+        ],
+        "correct_idx": 3,
+        "answer_letter": "D",
+        "explanation": "(6 + 8 + 10 + 12) ÷ 4 = 36 ÷ 4 = 9."
+      },
+      {
+        "id": 12,
+        "number": "12",
+        "title": "Weighted Mean and GPA",
+        "concept_text": "Observations contribute by weight. GPA = Σ(grade points × credits) ÷ Σ credits, so more credits means more influence.",
+        "question": "Course A: 4 points, 3 credits. Course B: 3 points, 2 credits. Course C: 2 points, 1 credit. What is the GPA to two decimals?",
+        "options": [
+          "3.33",
+          "3.00",
+          "3.50",
+          "4.00"
+        ],
+        "correct_idx": 0,
+        "answer_letter": "A",
+        "explanation": "(12 + 6 + 2) ÷ 6 = 20 ÷ 6 ≈ 3.33."
+      },
+      {
+        "id": 13,
+        "number": "13",
+        "title": "Quartiles",
+        "concept_text": "Three cut points divide ordered data into four portions. Q₁, Q₂, Q₃ are the 25th, 50th and 75th percentiles; Q₂ is the median.",
+        "question": "Which statement about quartiles is correct?",
+        "options": [
+          "They divide ordered data into three equal parts",
+          "They divide ordered data into four approximately equal parts, and Q₂ is the median",
+          "Q₁ is the median",
+          "Q₃ is the 25th percentile"
+        ],
+        "correct_idx": 1,
+        "answer_letter": "B",
+        "explanation": "Four portions; the second quartile is the median."
+      },
+      {
+        "id": 14,
+        "number": "14",
+        "title": "Position of the First Quartile",
+        "concept_text": "Q₁ position = (n + 1) × 0.25. It gives a position in the ordered data, not the value; fractions need interpolation.",
+        "question": "With 15 ordered observations, what is the position of Q₁?",
+        "options": [
+          "Third",
+          "Fifth",
+          "Fourth",
+          "Eighth"
+        ],
+        "correct_idx": 2,
+        "answer_letter": "C",
+        "explanation": "(15 + 1) × 0.25 = 16 × 0.25 = 4th position."
+      },
+      {
+        "id": 15,
+        "number": "15",
+        "title": "Calculating Quartiles",
+        "concept_text": "Sort ascending, then use positions (n + 1)/4, (n + 1)/2 and 3(n + 1)/4, reading values from the ordered list.",
+        "question": "Find the quartiles of 11, 3, 8, 15, 5, 9, 1, 13, 7, 10, 4.",
+        "options": [
+          "Q₁ = 3, Q₂ = 7, Q₃ = 10",
+          "Q₁ = 5, Q₂ = 9, Q₃ = 13",
+          "Q₁ = 4, Q₂ = 9, Q₃ = 11",
+          "Q₁ = 4, Q₂ = 8, Q₃ = 11"
+        ],
+        "correct_idx": 3,
+        "answer_letter": "D",
+        "explanation": "Sorted: 1, 3, 4, 5, 7, 8, 9, 10, 11, 13, 15. Positions 3, 6, 9 give values 4, 8, 11."
+      },
+      {
+        "id": 16,
+        "number": "16",
+        "title": "Interquartile Range (IQR)",
+        "concept_text": "IQR = Q₃ − Q₁, the spread of the middle 50%. Less sensitive to extremes than the range or standard deviation.",
+        "question": "If Q₁ = 6, Q₂ = 10 and Q₃ = 15, what is the IQR?",
+        "options": [
+          "5",
+          "9",
+          "4",
+          "21"
+        ],
+        "correct_idx": 1,
+        "answer_letter": "B",
+        "explanation": "15 − 6 = 9."
+      },
+      {
+        "id": 17,
+        "number": "17",
+        "title": "Mode",
+        "concept_text": "The most frequent value or category; there can be several. It depends on repetition, not size, so extreme values may leave it unchanged.",
+        "question": "The data are 2, 2, 5, 5 and 9. If 9 is replaced by 90, which statement is correct?",
+        "options": [
+          "The modes remain 2 and 5",
+          "The only mode becomes 90",
+          "There is no mode",
+          "The modes become 5 and 90"
+        ],
+        "correct_idx": 0,
+        "answer_letter": "A",
+        "explanation": "Both 2 and 5 still occur twice, the highest frequency."
+      },
+      {
+        "id": 18,
+        "number": "18",
+        "title": "Variance & Standard Deviation",
+        "concept_text": "The average squared deviation from the mean. Population variance divides by N, sample variance by n − 1; units are squared, and the square root is the standard deviation.",
+        "question": "Population A is 9, 10, 11. Population B is 1, 10, 19. Which statement is correct?",
+        "options": [
+          "A has the larger variance",
+          "Both are equal because the means are equal",
+          "B has the larger variance",
+          "Both have zero variance"
+        ],
+        "correct_idx": 2,
+        "answer_letter": "C",
+        "explanation": "Both means are 10, but B deviates far more from the mean."
+      },
+      {
+        "id": 19,
+        "number": "19",
+        "title": "Symmetry and Skewness",
+        "concept_text": "Positive skew means a longer right tail, negative a longer left tail. A normal distribution is symmetric with zero skew; a typical positive skew pulls the mean above the median.",
+        "question": "Which statement best describes skewness?",
+        "options": [
+          "A normal distribution has positive skewness",
+          "A positively skewed distribution has a longer left tail",
+          "A normal distribution always has mean greater than median",
+          "A normal distribution has zero skewness; in a typical positively skewed one, the mean exceeds the median"
+        ],
+        "correct_idx": 3,
+        "answer_letter": "D",
+        "explanation": "A long right tail typically pulls the mean upward beyond the median."
+      },
+      {
+        "id": 20,
+        "number": "20",
+        "title": "Bowley's Coefficient of Skewness",
+        "concept_text": "(Q₃ + Q₁ − 2Q₂) ÷ (Q₃ − Q₁). Positive when the upper quartile distance is larger; resistant to extremes; zero does not prove symmetry.",
+        "question": "A data set has Q₁ = 4, Q₂ = 7 and Q₃ = 12. What is Bowley's coefficient?",
+        "options": [
+          "−0.25",
+          "0.25",
+          "0.50",
+          "0"
+        ],
+        "correct_idx": 1,
+        "answer_letter": "B",
+        "explanation": "(12 + 4 − 2×7) ÷ (12 − 4) = (16 − 14) ÷ 8 = 2 ÷ 8 = 0.25."
+      }
+    ]
+  },
+  "pharmacoepi": {
+    "course_key": "pharmacoepi",
+    "title": "Research Methods & Pharmacoepidemiology (PHP 417)",
+    "guide_title": "Pharmacoepidemiology Practice Questions & Study Guide",
+    "subtitle": "20 Core Epidemiological Concepts & 20 Clinical Case Scenarios",
+    "program": "PharmD, College of Pharmacy, Shaqra University",
+    "instructor": "Dr. Abdul Mohsen Alrohaimi",
+    "filename": "PHP417_Pharmacoepidemiology_Practice_Questions.docx",
+    "file_type": "DOCX",
+    "file_size": "30 KB",
+    "download_url": "/guide/pharmacoepi/download",
+    "items": [
+      {
+        "id": 1,
+        "number": "01",
+        "concept_points": [
+          "1.  Pharmacoepidemiology studies how medicines are used and how they affect health in populations.",
+          "2.  It applies epidemiological methods to investigate medication benefits, risks, and patterns of use.",
+          "3.  Large population studies can identify effects that may be missed in smaller clinical trials."
+        ],
+        "question": "Researchers analyze prescription records from 60,000 adults to investigate whether prolonged use of a medicine is associated with hospitalization. Which field best describes this research?",
+        "options": [
+          "Pharmaceutical chemistry",
+          "Pharmacoepidemiology",
+          "Pharmaceutical manufacturing",
+          "Drug formulation"
+        ],
+        "correct_idx": 1,
+        "answer_letter": "B",
+        "explanation": "B.  Pharmacoepidemiology. The study investigates medication exposure and health outcomes in a large population.",
+        "title": "Pharmacoepidemiology Definition & Scope",
+        "concept_text": " Pharmacoepidemiology studies how medicines are used and how they affect health in populations.  It applies epidemiological methods to investigate medication benefits, risks, and patterns of use.  Large population studies can identify effects that may be missed in smaller clinical trials."
+      },
+      {
+        "id": 2,
+        "number": "02",
+        "concept_points": [
+          "1.  Pharmacokinetics describes what the body does to a drug through absorption, distribution, metabolism, and excretion.",
+          "2.  Pharmacodynamics describes what a drug does to the body, including receptor interactions and therapeutic effects.",
+          "3.  Measuring drug concentrations over time concerns pharmacokinetics; measuring the resulting response concerns pharmacodynamics."
+        ],
+        "question": "A researcher measures how quickly the liver converts a medicine into its metabolites. Which process is being investigated?",
+        "options": [
+          "Pharmacodynamic receptor activation",
+          "Therapeutic effectiveness",
+          "Pharmacokinetic metabolism",
+          "Medication adherence"
+        ],
+        "correct_idx": 2,
+        "answer_letter": "C",
+        "explanation": "C.  Pharmacokinetic metabolism. Metabolism is one of the processes determining how the body handles a drug.",
+        "title": "Pharmacokinetics vs Pharmacodynamics",
+        "concept_text": " Pharmacokinetics describes what the body does to a drug through absorption, distribution, metabolism, and excretion.  Pharmacodynamics describes what a drug does to the body, including receptor interactions and therapeutic effects.  Measuring drug concentrations over time concerns pharmacokinetics; measuring the resulting response concerns pharmacodynamics."
+      },
+      {
+        "id": 3,
+        "number": "03",
+        "concept_points": [
+          "1.  Type A adverse drug reactions result from an exaggerated effect of a medicine’s known pharmacological action.",
+          "2.  They are generally predictable and dose-related, meaning their likelihood or severity may increase with exposure.",
+          "3.  Recognizing this pattern helps explain why dose adjustment can sometimes reduce the adverse effect."
+        ],
+        "question": "A patient develops excessive drowsiness after the dose of a sedating medicine is increased. The reaction reflects the medicine’s expected action. How is it best classified?",
+        "options": [
+          "Type A adverse drug reaction",
+          "Type B adverse drug reaction",
+          "An unrelated event",
+          "A beneficial therapeutic response"
+        ],
+        "correct_idx": 0,
+        "answer_letter": "A",
+        "explanation": "A.  Type A adverse drug reaction. The reaction is predictable from the drug’s action and is associated with an increased dose.",
+        "title": "Type A Adverse Drug Reactions",
+        "concept_text": " Type A adverse drug reactions result from an exaggerated effect of a medicine’s known pharmacological action.  They are generally predictable and dose-related, meaning their likelihood or severity may increase with exposure.  Recognizing this pattern helps explain why dose adjustment can sometimes reduce the adverse effect."
+      },
+      {
+        "id": 4,
+        "number": "04",
+        "concept_points": [
+          "1.  Efficacy describes how well a treatment works under ideal or carefully controlled study conditions.",
+          "2.  Effectiveness describes how well it works in routine practice, where adherence and patient characteristics vary.",
+          "3.  A treatment can have high efficacy but lower effectiveness when practical barriers reduce its benefit."
+        ],
+        "question": "An inhaler improves symptoms substantially in a supervised trial, but patients in routine care obtain less benefit because many use it incorrectly. What best explains the difference?",
+        "options": [
+          "Routine effectiveness must exceed trial efficacy",
+          "Incorrect use increases efficacy",
+          "Efficacy measures treatment cost",
+          "Administration technique can reduce real-world effectiveness"
+        ],
+        "correct_idx": 3,
+        "answer_letter": "D",
+        "explanation": "D.  Administration technique can reduce real-world effectiveness. Incorrect use can limit the benefit achieved outside controlled conditions.",
+        "title": "Type B Idiosyncratic & Allergic Reactions",
+        "concept_text": " Efficacy describes how well a treatment works under ideal or carefully controlled study conditions.  Effectiveness describes how well it works in routine practice, where adherence and patient characteristics vary.  A treatment can have high efficacy but lower effectiveness when practical barriers reduce its benefit."
+      },
+      {
+        "id": 5,
+        "number": "05",
+        "concept_points": [
+          "1.  Drug utilization research examines the prescribing, dispensing, and use of medicines in populations.",
+          "2.  It can assess whether treatment patterns follow recommendations and whether medicines are used appropriately.",
+          "3.  Its findings help identify underuse, overuse, and opportunities to improve prescribing quality."
+        ],
+        "question": "Investigators review clinic records to determine how often antibiotics are prescribed for illnesses documented as viral infections. What type of research is this?",
+        "options": [
+          "Drug synthesis research",
+          "Drug utilization research",
+          "Animal toxicity research",
+          "Drug stability testing"
+        ],
+        "correct_idx": 1,
+        "answer_letter": "B",
+        "explanation": "B.  Drug utilization research. The investigators are assessing prescribing patterns and their appropriateness.",
+        "title": "Drug Surveillance & Post-Marketing Safety",
+        "concept_text": " Drug utilization research examines the prescribing, dispensing, and use of medicines in populations.  It can assess whether treatment patterns follow recommendations and whether medicines are used appropriately.  Its findings help identify underuse, overuse, and opportunities to improve prescribing quality."
+      },
+      {
+        "id": 6,
+        "number": "06",
+        "concept_points": [
+          "1.  Phase I trials usually provide the first systematic evaluation of an investigational medicine in humans.",
+          "2.  They focus primarily on initial safety, tolerability, dose exploration, and pharmacokinetic characteristics.",
+          "3.  They generally involve small groups and are not designed to establish definitive therapeutic benefit."
+        ],
+        "question": "A small study administers increasing doses of an investigational medicine while monitoring adverse effects and blood concentrations. Which trial phase best fits this description?",
+        "options": [
+          "Phase IV",
+          "Phase III",
+          "Phase I",
+          "Phase II"
+        ],
+        "correct_idx": 2,
+        "answer_letter": "C",
+        "explanation": "C.  Phase I. Early dose exploration, tolerability assessment, and pharmacokinetic measurements are characteristic Phase I objectives.",
+        "title": "Medication Adherence & Compliance",
+        "concept_text": " Phase I trials usually provide the first systematic evaluation of an investigational medicine in humans.  They focus primarily on initial safety, tolerability, dose exploration, and pharmacokinetic characteristics.  They generally involve small groups and are not designed to establish definitive therapeutic benefit."
+      },
+      {
+        "id": 7,
+        "number": "07",
+        "concept_points": [
+          "1.  Point prevalence is the proportion of a population that has a condition at a particular time.",
+          "2.  It includes all existing cases at that time, whether they developed recently or much earlier.",
+          "3.  Calculate it by dividing existing cases by the total population assessed and multiplying by 100 for a percentage."
+        ],
+        "question": "On September 1, a survey finds that 150 of 5,000 residents have eczema. What is the point prevalence?",
+        "options": [
+          "3%",
+          "0.3%",
+          "15%",
+          "30%"
+        ],
+        "correct_idx": 0,
+        "answer_letter": "A",
+        "explanation": "A.  3%. Point prevalence = (150 ÷ 5,000) × 100 = 3%.",
+        "title": "Incidence vs Prevalence of Adverse Events",
+        "concept_text": " Point prevalence is the proportion of a population that has a condition at a particular time.  It includes all existing cases at that time, whether they developed recently or much earlier.  Calculate it by dividing existing cases by the total population assessed and multiplying by 100 for a percentage."
+      },
+      {
+        "id": 8,
+        "number": "08",
+        "concept_points": [
+          "1.  Cumulative incidence is the proportion of initially disease-free people who develop a disease during a specified period.",
+          "2.  The denominator includes only people at risk at the beginning; existing cases are excluded.",
+          "3.  For a closed group with complete follow-up, divide new cases by the number initially at risk."
+        ],
+        "question": "A group contains 1,600 people, including 100 who already have a disease. All remaining people are followed for one year, during which 45 develop the disease. What is the one-year cumulative incidence?",
+        "options": [
+          "2.81%",
+          "4.5%",
+          "9.06%",
+          "3%"
+        ],
+        "correct_idx": 3,
+        "answer_letter": "D",
+        "explanation": "D.  3%. Initially at risk = 1,600 − 100 = 1,500; cumulative incidence = (45 ÷ 1,500) × 100 = 3%.",
+        "title": "Relative Risk (RR) in Cohort Studies",
+        "concept_text": " Cumulative incidence is the proportion of initially disease-free people who develop a disease during a specified period.  The denominator includes only people at risk at the beginning; existing cases are excluded.  For a closed group with complete follow-up, divide new cases by the number initially at risk."
+      },
+      {
+        "id": 9,
+        "number": "09",
+        "concept_points": [
+          "1.  Incidence rate measures how quickly new cases arise by relating them to accumulated time at risk.",
+          "2.  Its denominator is person-time, which allows participants to contribute different lengths of follow-up.",
+          "3.  Unlike cumulative incidence, it is expressed as cases per unit of person-time rather than as a percentage."
+        ],
+        "question": "A study identifies 24 new cases during 3,000 person-years at risk. What is the incidence rate per 1,000 person-years?",
+        "options": [
+          "80 cases per 1,000 person-years",
+          "8 cases per 1,000 person-years",
+          "0.8 cases per 1,000 person-years",
+          "125 cases per 1,000 person-years"
+        ],
+        "correct_idx": 1,
+        "answer_letter": "B",
+        "explanation": "B.  8 cases per 1,000 person-years. Incidence rate = (24 ÷ 3,000) × 1,000 = 8.",
+        "title": "Odds Ratio (OR) in Case-Control Studies",
+        "concept_text": " Incidence rate measures how quickly new cases arise by relating them to accumulated time at risk.  Its denominator is person-time, which allows participants to contribute different lengths of follow-up.  Unlike cumulative incidence, it is expressed as cases per unit of person-time rather than as a percentage."
+      },
+      {
+        "id": 10,
+        "number": "10",
+        "concept_points": [
+          "1.  Attack rate is the proportion of an at-risk group that develops a disease during a defined outbreak.",
+          "2.  Despite its name, it is a form of cumulative incidence rather than a person-time incidence rate.",
+          "3.  Divide the number of new outbreak cases by the number of people at risk during the outbreak."
+        ],
+        "question": "All 240 attendees at a dinner are initially well. During the following two days, 36 develop the illness being investigated. What is the attack rate among attendees?",
+        "options": [
+          "6.7%",
+          "36%",
+          "15%",
+          "1.5%"
+        ],
+        "correct_idx": 2,
+        "answer_letter": "C",
+        "explanation": "C.  15%. Attack rate = (36 ÷ 240) × 100 = 15%.",
+        "title": "Confounding by Indication",
+        "concept_text": " Attack rate is the proportion of an at-risk group that develops a disease during a defined outbreak.  Despite its name, it is a form of cumulative incidence rather than a person-time incidence rate.  Divide the number of new outbreak cases by the number of people at risk during the outbreak."
+      },
+      {
+        "id": 11,
+        "number": "11",
+        "concept_points": [
+          "1.  Case-fatality proportion measures the proportion of people with a disease who die from it within a specified period.",
+          "2.  Its denominator is the number of diagnosed cases, rather than the population from which those cases arose.",
+          "3.  Interpretation requires a clear follow-up period and knowledge of outcomes for the included patients."
+        ],
+        "question": "Among 320 patients diagnosed with an infection, 16 die from that infection within 30 days. Outcomes are known for all patients. What is the 30-day case-fatality proportion?",
+        "options": [
+          "5%",
+          "0.5%",
+          "16%",
+          "20%"
+        ],
+        "correct_idx": 0,
+        "answer_letter": "A",
+        "explanation": "A.  5%. Case-fatality proportion = (16 ÷ 320) × 100 = 5%.",
+        "title": "Randomized Controlled Trials (RCTs)",
+        "concept_text": " Case-fatality proportion measures the proportion of people with a disease who die from it within a specified period.  Its denominator is the number of diagnosed cases, rather than the population from which those cases arose.  Interpretation requires a clear follow-up period and knowledge of outcomes for the included patients."
+      },
+      {
+        "id": 12,
+        "number": "12",
+        "concept_points": [
+          "1.  Absolute risk difference measures the numerical difference between the risks in two groups over the same period.",
+          "2.  For an exposure comparison, it can be calculated as exposed risk minus unexposed risk.",
+          "3.  When risks are percentages, express the difference in percentage points to distinguish it from relative change."
+        ],
+        "question": "During one year, an adverse outcome occurs in 18% of exposed patients and 10% of unexposed patients. What is the exposed-minus-unexposed risk difference?",
+        "options": [
+          "80 percentage points",
+          "28 percentage points",
+          "1.8 percentage points",
+          "8 percentage points"
+        ],
+        "correct_idx": 3,
+        "answer_letter": "D",
+        "explanation": "D.  8 percentage points. Risk difference = 18% − 10% = 8 percentage points.",
+        "title": "Pragmatic Clinical Trials",
+        "concept_text": " Absolute risk difference measures the numerical difference between the risks in two groups over the same period.  For an exposure comparison, it can be calculated as exposed risk minus unexposed risk.  When risks are percentages, express the difference in percentage points to distinguish it from relative change."
+      },
+      {
+        "id": 13,
+        "number": "13",
+        "concept_points": [
+          "1.  A risk ratio compares outcome risk in an exposed group with outcome risk in an unexposed group.",
+          "2.  A value of 1 indicates equal risks; values above 1 indicate higher risk, and values below 1 indicate lower risk.",
+          "3.  It describes a relative association and does not, by itself, establish causation or the absolute risk difference."
+        ],
+        "question": "A study reports a risk ratio of 0.75 for an outcome among exposed participants compared with unexposed participants. What is the best interpretation?",
+        "options": [
+          "Exposure is associated with a 75% lower risk",
+          "Exposure is associated with a 25% lower risk",
+          "Exposure reduces absolute risk by 25 percentage points",
+          "Exactly 0.75% of exposed participants develop the outcome"
+        ],
+        "correct_idx": 1,
+        "answer_letter": "B",
+        "explanation": "B.  Exposure is associated with a 25% lower risk. Relative reduction = (1 − 0.75) × 100 = 25%.",
+        "title": "Cohort Study Design",
+        "concept_text": " A risk ratio compares outcome risk in an exposed group with outcome risk in an unexposed group.  A value of 1 indicates equal risks; values above 1 indicate higher risk, and values below 1 indicate lower risk.  It describes a relative association and does not, by itself, establish causation or the absolute risk difference."
+      },
+      {
+        "id": 14,
+        "number": "14",
+        "concept_points": [
+          "1.  Odds compare the number of people with an outcome with the number without that outcome.",
+          "2.  An odds ratio divides the outcome odds in one group by the outcome odds in the comparison group.",
+          "3.  For a two-by-two table, calculate it using the cross-products; odds and risks are different quantities."
+        ],
+        "question": "An exposed group contains 30 participants with an outcome and 70 without it. An unexposed group contains 10 with the outcome and 90 without it. What is the odds ratio?",
+        "options": [
+          "3.00",
+          "0.26",
+          "3.86",
+          "2.00"
+        ],
+        "correct_idx": 2,
+        "answer_letter": "C",
+        "explanation": "C.  3.86. Odds ratio = (30 × 90) ÷ (70 × 10) = 3.86, approximately.",
+        "title": "Case-Control Study Design",
+        "concept_text": " Odds compare the number of people with an outcome with the number without that outcome.  An odds ratio divides the outcome odds in one group by the outcome odds in the comparison group.  For a two-by-two table, calculate it using the cross-products; odds and risks are different quantities."
+      },
+      {
+        "id": 15,
+        "number": "15",
+        "concept_points": [
+          "1.  Number needed to treat estimates how many patients must receive a treatment to prevent one additional undesirable outcome.",
+          "2.  Calculate it as 1 divided by the absolute risk reduction, expressing the reduction as a decimal.",
+          "3.  It applies to a specified comparison and follow-up period; round a fractional result up to the next whole number."
+        ],
+        "question": "Over three years, an undesirable outcome occurs in 14% of patients receiving standard care and 10% receiving a new treatment. What is the number needed to treat?",
+        "options": [
+          "25",
+          "4",
+          "10",
+          "40"
+        ],
+        "correct_idx": 0,
+        "answer_letter": "A",
+        "explanation": "A.  25. Absolute risk reduction = 0.14 − 0.10 = 0.04; NNT = 1 ÷ 0.04 = 25 patients over three years.",
+        "title": "Cross-Sectional Studies & Surveys",
+        "concept_text": " Number needed to treat estimates how many patients must receive a treatment to prevent one additional undesirable outcome.  Calculate it as 1 divided by the absolute risk reduction, expressing the reduction as a decimal.  It applies to a specified comparison and follow-up period; round a fractional result up to the next whole number."
+      },
+      {
+        "id": 16,
+        "number": "16",
+        "concept_points": [
+          "1.  Number needed to harm estimates how many patients must receive an exposure for one additional adverse outcome to occur.",
+          "2.  Calculate it as 1 divided by the absolute increase in risk, expressed as a decimal.",
+          "3.  A smaller value indicates that fewer exposed patients are needed for an additional adverse outcome over the stated period."
+        ],
+        "question": "With complete six-month follow-up, an adverse effect occurs in 9% of patients receiving a medicine and 4% receiving placebo. What is the number needed to harm?",
+        "options": [
+          "5",
+          "11",
+          "25",
+          "20"
+        ],
+        "correct_idx": 3,
+        "answer_letter": "D",
+        "explanation": "D.  20. Absolute risk increase = 0.09 − 0.04 = 0.05; NNH = 1 ÷ 0.05 = 20 patients over six months.",
+        "title": "Spontaneous Adverse Event Reporting",
+        "concept_text": " Number needed to harm estimates how many patients must receive an exposure for one additional adverse outcome to occur.  Calculate it as 1 divided by the absolute increase in risk, expressed as a decimal.  A smaller value indicates that fewer exposed patients are needed for an additional adverse outcome over the stated period."
+      },
+      {
+        "id": 17,
+        "number": "17",
+        "concept_points": [
+          "1.  A research hypothesis states a specific prediction about a relationship or difference that can be evaluated using data.",
+          "2.  A clear hypothesis identifies the relevant population, intervention or exposure, comparison, and measurable outcome.",
+          "3.  Including a time frame helps define when the outcome will be assessed and makes the prediction more precise."
+        ],
+        "question": "Which statement is the most clearly testable research hypothesis?",
+        "options": [
+          "Digital pharmacy services are interesting",
+          "Among adults taking long-term medicines, weekly reminders improve adherence compared with no reminders over 12 weeks",
+          "All patients deserve excellent care",
+          "Medication use has many important aspects"
+        ],
+        "correct_idx": 1,
+        "answer_letter": "B",
+        "explanation": "B.  It specifies a population, intervention, comparison, measurable outcome, and assessment period.",
+        "title": "Electronic Healthcare Database Studies",
+        "concept_text": " A research hypothesis states a specific prediction about a relationship or difference that can be evaluated using data.  A clear hypothesis identifies the relevant population, intervention or exposure, comparison, and measurable outcome.  Including a time frame helps define when the outcome will be assessed and makes the prediction more precise."
+      },
+      {
+        "id": 18,
+        "number": "18",
+        "concept_points": [
+          "1.  Feasibility concerns whether a study can be completed with the available time, funding, expertise, and resources.",
+          "2.  An important research question still requires a practical recruitment plan and achievable study procedures.",
+          "3.  Evaluating feasibility early helps researchers adjust the study scope before committing resources."
+        ],
+        "question": "A student plans to recruit 800 patients within two months, but the only participating clinic sees about 20 eligible patients per month. Which issue most directly threatens the project?",
+        "options": [
+          "Lack of an interesting title",
+          "Excessive literature review",
+          "Limited recruitment feasibility",
+          "Too many references"
+        ],
+        "correct_idx": 2,
+        "answer_letter": "C",
+        "explanation": "C.  Limited recruitment feasibility. The available patient pool cannot realistically support the planned sample within the proposed time.",
+        "title": "Selection Bias & Recall Bias",
+        "concept_text": " Feasibility concerns whether a study can be completed with the available time, funding, expertise, and resources.  An important research question still requires a practical recruitment plan and achievable study procedures.  Evaluating feasibility early helps researchers adjust the study scope before committing resources."
+      },
+      {
+        "id": 19,
+        "number": "19",
+        "concept_points": [
+          "1.  A case series describes several patients with a shared condition, exposure, or unusual clinical finding.",
+          "2.  It can reveal patterns and generate hypotheses, but it does not include a comparison group by design.",
+          "3.  Without a comparison group and suitable denominators, it cannot directly calculate a comparative risk ratio."
+        ],
+        "question": "A pharmacist describes the clinical features of six patients who developed a similar unusual reaction after using a medicine. No comparison group is included. Which design is being used?",
+        "options": [
+          "Case series",
+          "Randomized controlled trial",
+          "Ecological study",
+          "Comparative cohort study"
+        ],
+        "correct_idx": 0,
+        "answer_letter": "A",
+        "explanation": "A.  Case series. The report describes several patients with a shared finding without including a comparison group.",
+        "title": "Number Needed to Harm (NNH)",
+        "concept_text": " A case series describes several patients with a shared condition, exposure, or unusual clinical finding.  It can reveal patterns and generate hypotheses, but it does not include a comparison group by design.  Without a comparison group and suitable denominators, it cannot directly calculate a comparative risk ratio."
+      },
+      {
+        "id": 20,
+        "number": "20",
+        "concept_points": [
+          "1.  Cross-sectional studies assess exposure and outcome at the same time, providing a snapshot of a population.",
+          "2.  They are useful for estimating prevalence and examining associations between current characteristics.",
+          "3.  Because the sequence of events may be unclear, they often cannot establish whether exposure preceded the outcome."
+        ],
+        "question": "A survey records students’ current sleep difficulties and current use of nonprescription sleep medicines during one visit. Why is it difficult to determine whether medicine use preceded the sleep difficulties?",
+        "options": [
+          "Cross-sectional studies always assign treatments randomly",
+          "Prevalence cannot be measured in a survey",
+          "Every participant must be followed for several years",
+          "Exposure and outcome are measured at the same time"
+        ],
+        "correct_idx": 3,
+        "answer_letter": "D",
+        "explanation": "D.  Exposure and outcome are measured at the same time. The survey may not establish which occurred first.",
+        "title": "Evidence Synthesis & Systematic Reviews",
+        "concept_text": " Cross-sectional studies assess exposure and outcome at the same time, providing a snapshot of a population.  They are useful for estimating prevalence and examining associations between current characteristics.  Because the sequence of events may be unclear, they often cannot establish whether exposure preceded the outcome."
+      }
+    ]
+  }
+}
