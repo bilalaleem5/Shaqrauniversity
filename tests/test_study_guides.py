@@ -46,7 +46,7 @@ def test_study_guides():
         crs = c.get('/courses')
         assert crs.status_code == 200
         html = crs.data.decode('utf-8')
-        assert "20 Exam Concepts" in html
+        assert "20 Course Concepts" in html
         assert "/guide/biostatistics" in html
         assert "/guide/pharmacoepi" in html
         print("[OK] /courses displays study guide links and badges")
@@ -55,7 +55,7 @@ def test_study_guides():
         g_bio = c.get('/guide/biostatistics')
         assert g_bio.status_code == 200
         bio_html = g_bio.data.decode('utf-8')
-        assert "20 High-Yield Exam Concepts" in bio_html
+        assert "20 Core Course Concepts" in bio_html
         assert "Biostatistics &amp; Health Informatics" in bio_html or "Biostatistics" in bio_html
         assert "/guide/biostatistics/download" in bio_html
         print("[OK] /guide/biostatistics rendered successfully")

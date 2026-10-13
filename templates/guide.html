@@ -2,7 +2,7 @@
 {% block title %}{{ guide.guide_title }} ({{ cfg.code }}) - Interactive Study Guide{% endblock %}
 
 {% block nav %}
-<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<div class="top-nav-items">
   <span class="pill navy" style="font-size:12px">
     <b>{{ cfg.code }}</b> &middot; Study Guide
   </span>
@@ -42,7 +42,7 @@
         <span class="meta-dot">&middot;</span>
         <span>Format: <b>Interactive Digital + Downloadable {{ guide.file_type }}</b></span>
         <span class="meta-dot">&middot;</span>
-        <span><b>20 High-Yield Exam Concepts</b></span>
+        <span><b>20 Core Course Concepts</b></span>
       </div>
     </div>
 
@@ -112,7 +112,7 @@
       <div class="guide-question-box">
         <div class="guide-question-tag">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          <span>Exam Practice Scenario</span>
+          <span>Practice Scenario</span>
         </div>
         <h3 class="guide-question-text">{{ item.question }}</h3>
 

@@ -2,7 +2,7 @@
 {% block title %}{{ cfg.title }} ({{ cfg.code }}) - AI Course Tutor{% endblock %}
 
 {% block nav %}
-<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<div class="top-nav-items">
   <span class="pill navy" style="font-size:12px">
     <b>{{ cfg.code }}</b> &middot; {{ cfg.title }}
   </span>
@@ -76,7 +76,7 @@
     <div class="chips">
       {% if guide %}
       <a href="/guide/{{ course }}" class="chip chip-guide" style="text-decoration:none;background:var(--navy-800);color:#ffffff;border-color:var(--navy-700)">
-        📖 20 Exam Study Concepts
+        📖 20 Course Concepts
       </a>
       {% endif %}
       <span class="chip" id="intro">📖 Introduce Course</span>
@@ -111,7 +111,7 @@
   <div class="card hide" id="pQuiz">
     <div class="card-title-row">
       <div>
-        <h2>Practice &amp; Exam Preparation</h2>
+        <h2>Practice &amp; Course Self-Assessment</h2>
         <div class="muted">Generate questions tailored to your lectures. Practice MCQ or write theory answers for AI grading.</div>
       </div>
       <div id="scoreBox"></div>

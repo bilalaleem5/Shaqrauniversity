@@ -57,7 +57,7 @@
           <input name="name" required minlength="3" maxlength="80" placeholder="e.g. Fahad Al-Harbi" value="{{ request.form.name }}">
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="auth-grid-2">
           <div>
             <label>Student ID</label>
             <input name="student_id" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_\-]{3,20}" placeholder="e.g. 44109876" value="{{ request.form.student_id }}">

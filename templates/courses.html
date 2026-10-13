@@ -2,7 +2,7 @@
 {% block title %}My Courses - AI Course Tutor{% endblock %}
 
 {% block nav %}
-<div class="header-user">
+<div class="header-user top-nav-items">
   <a class="btn alt sm" href="/feedback" title="Submit feedback or report issues">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="12" cy="11" r="1"></circle><circle cx="16" cy="11" r="1"></circle><circle cx="8" cy="11" r="1"></circle></svg>
     <span>Feedback &amp; Help</span>
@@ -36,7 +36,7 @@
     </div>
     <div class="guardrail-content">
       <b>Strict Academic Guardrails Enabled</b>
-      <p>This AI tutor strictly answers from your official lecture materials and syllabus. Off-topic queries are restricted to keep your preparation focused on exam success.</p>
+      <p>This AI tutor strictly answers from your official lecture materials and syllabus. Off-topic queries are restricted to keep your preparation focused on academic success.</p>
     </div>
   </div>
 
@@ -52,7 +52,7 @@
           </span>
           <div style="display:flex;gap:6px;align-items:center">
             {% if g %}
-            <span class="pill good" style="font-size:11px">📖 20 Exam Concepts</span>
+            <span class="pill good" style="font-size:11px">📖 20 Course Concepts</span>
             {% endif %}
             <span class="pill navy" style="font-size:11px">Active Term</span>
           </div>
@@ -78,7 +78,7 @@
           <span class="pill good" style="font-weight:600">📥 Official Study Guide</span>
           {% endif %}
           <span class="pill">🎯 Practice MCQ</span>
-          <span class="pill">✍️ Theory Exam</span>
+          <span class="pill">✍️ Theory Practice</span>
           <span class="pill">📚 Lecture Slides</span>
           <span class="pill">💬 24/7 AI Tutor</span>
         </div>

@@ -3109,18 +3109,618 @@ textarea.big {
   border-color: var(--navy-800);
 }
 
-/* Responsive Guide Adjustments */
+/* ==========================================================================
+   Comprehensive Mobile & Tablet Responsive Optimizations (<= 768px & <= 480px)
+   ========================================================================== */
+
 @media (max-width: 768px) {
+  /* Header & Navigation */
+  header.top {
+    padding: 10px 14px;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .brand-wrapper {
+    gap: 10px;
+  }
+
+  .brand-wrapper img {
+    height: 32px;
+  }
+
+  .college-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    letter-spacing: 0.04em;
+  }
+
+  .top-nav-items {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 4px 0 2px;
+  }
+
+  .top-nav-items::-webkit-scrollbar {
+    display: none;
+  }
+
+  .top-nav-items .btn,
+  .top-nav-items .pill {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .header-user {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .user-pill {
+    padding: 3px 8px 3px 4px;
+    gap: 6px;
+  }
+
+  .avatar {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .user-name {
+    font-size: 12px;
+  }
+
+  .user-role {
+    font-size: 10.5px;
+  }
+
+  /* Layout Wrappers */
+  .wrap {
+    padding: 14px 12px 36px;
+  }
+
+  h1 {
+    font-size: 21px;
+    margin-bottom: 4px;
+  }
+
+  h2 {
+    font-size: 17px;
+    margin-bottom: 8px;
+  }
+
+  .page-head {
+    margin-bottom: 16px;
+  }
+
+  .page-title-box h1 {
+    font-size: 19px;
+  }
+
+  .page-title-box p {
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  /* Chat & Tabs */
+  .tabbar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px;
+    padding: 4px;
+    margin-bottom: 12px;
+    border-radius: var(--radius-md);
+  }
+
+  .tabbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabbar button,
+  .tabbar .tabbar-link {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    border-radius: var(--radius-sm);
+  }
+
+  .chatbox {
+    height: calc(100dvh - 160px);
+    min-height: 460px;
+    border-radius: var(--radius-lg);
+  }
+
+  .chat-banner {
+    padding: 10px 14px;
+    gap: 6px;
+  }
+
+  .chat-banner-title {
+    font-size: 13px;
+  }
+
+  .chips {
+    padding: 8px 10px;
+    gap: 6px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 11.5px;
+    padding: 5px 11px;
+  }
+
+  .msgs {
+    padding: 12px 10px;
+    gap: 12px;
+  }
+
+  .msg-row {
+    max-width: 96%;
+    gap: 8px;
+  }
+
+  .msg-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .m {
+    padding: 10px 13px;
+    font-size: 13.5px;
+    border-radius: 14px;
+    line-height: 1.55;
+  }
+
+  .m.a h1 { font-size: 17px; }
+  .m.a h2 { font-size: 15.5px; }
+  .m.a h3 { font-size: 14px; }
+  .m.a table, .ans table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .m.a pre, .ans pre {
+    padding: 10px 12px;
+    font-size: 12px;
+    margin: 8px 0;
+  }
+
+  .katex-display {
+    padding: 6px 8px !important;
+    font-size: 0.95em;
+  }
+
+  .composer {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .composer textarea {
+    height: 44px;
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: var(--radius-md);
+  }
+
+  .composer button {
+    padding: 0 14px;
+    height: 44px;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .composer-hint {
+    display: none;
+  }
+
+  /* Quiz Pane on Mobile */
+  .card-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .modes {
+    gap: 6px;
+    margin: 10px 0 14px;
+  }
+
+  .modes button {
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  /* Study Guide Hero */
   .guide-hero-card {
     flex-direction: column;
-    padding: 24px 20px;
+    align-items: stretch;
+    padding: 20px 16px;
+    border-radius: var(--radius-lg);
+    gap: 16px;
+    margin-bottom: 16px;
   }
+
+  .guide-badge-row {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .guide-badge-row .pill {
+    font-size: 10.5px !important;
+    padding: 3px 8px;
+  }
+
+  .guide-hero-title {
+    font-size: 20px;
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+
+  .guide-hero-sub {
+    font-size: 13px;
+    line-height: 1.45;
+    margin-bottom: 12px;
+  }
+
+  .guide-meta-bar {
+    font-size: 11.5px;
+    gap: 6px;
+  }
+
   .guide-hero-actions {
     width: 100%;
+    margin-top: 10px;
+    gap: 8px;
   }
+
+  .guide-hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+
   .guide-toolbar {
     flex-direction: column;
     align-items: stretch;
+    padding: 12px 14px;
+    gap: 12px;
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
   }
+
+  .guide-search-box {
+    width: 100%;
+    min-width: 100%;
+    padding: 8px 12px;
+  }
+
+  .guide-search-box input {
+    font-size: 13.5px;
+  }
+
+  .guide-progress-box {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .guide-cards-grid {
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .guide-card {
+    padding: 16px 14px;
+    border-radius: var(--radius-md);
+  }
+
+  .guide-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .guide-num-badge {
+    font-size: 10.5px;
+    padding: 2px 8px;
+    margin-bottom: 6px;
+  }
+
+  .guide-card-title {
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .mastered-toggle {
+    align-self: flex-start;
+    padding: 4px 10px;
+  }
+
+  .mastered-label {
+    font-size: 11.5px;
+  }
+
+  .guide-concept-box {
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border-radius: var(--radius-sm);
+  }
+
+  .guide-concept-label {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .guide-concept-text {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .guide-question-box {
+    padding: 12px 12px;
+    margin-bottom: 12px;
+    border-radius: var(--radius-sm);
+  }
+
+  .guide-question-tag {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .guide-question-text {
+    font-size: 13.5px;
+    line-height: 1.45;
+    margin-bottom: 10px;
+  }
+
+  .guide-options-list {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .guide-opt-btn {
+    padding: 9px 10px;
+    font-size: 12.5px;
+    gap: 8px;
+    min-height: 44px;
+  }
+
+  .guide-opt-letter {
+    width: 20px;
+    height: 20px;
+    font-size: 10.5px;
+  }
+
+  .guide-expl-box {
+    padding: 10px 12px;
+    margin-top: 10px;
+  }
+
+  .guide-expl-text {
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .guide-card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding-top: 10px;
+  }
+
+  .guide-card-footer .btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 12.5px;
+    padding: 9px 12px;
+  }
+
+  /* Courses List on Mobile */
+  .course-card {
+    padding: 18px 16px;
+    border-radius: var(--radius-lg);
+  }
+
+  .course-code-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .course-title {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .course-program {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .course-desc {
+    font-size: 13px;
+    line-height: 1.45;
+    margin-bottom: 14px;
+  }
+
+  .course-tags {
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+
+  .course-tags .pill {
+    font-size: 10.5px;
+    padding: 3px 8px;
+  }
+
+  .course-card-actions {
+    gap: 8px;
+    padding-top: 12px;
+  }
+
+  .course-main-btn {
+    padding: 10px 16px;
+    font-size: 13.5px;
+  }
+
+  .course-sub-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .course-sub-actions .btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 12.5px;
+    padding: 8px 12px;
+  }
+
+  .guardrail-banner {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .guardrail-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .guardrail-content b {
+    font-size: 12.5px;
+  }
+
+  .guardrail-content p {
+    font-size: 11.5px;
+    line-height: 1.4;
+  }
+
+  /* Auth / Login on Mobile */
+  .auth-card-wrapper {
+    padding: 0;
+    max-width: 100%;
+  }
+
+  .auth-nav-bar {
+    margin-bottom: 14px;
+    font-size: 12px;
+  }
+
+  .auth {
+    padding: 22px 18px;
+    border-radius: var(--radius-lg);
+  }
+
+  .auth-header {
+    margin-bottom: 18px;
+  }
+
+  .auth-header h1 {
+    font-size: 20px;
+  }
+
+  .auth-header p {
+    font-size: 12px;
+  }
+
+  .auth-logo-box img {
+    height: 44px;
+  }
+
+  .auth .tabs {
+    margin-bottom: 18px;
+  }
+
+  .auth .tabs a {
+    font-size: 12.5px;
+    padding: 8px 10px;
+  }
+
+  .auth input,
+  .auth select {
+    font-size: 16px !important; /* Prevents iOS auto-zoom on input tap */
+    padding: 11px 14px;
+  }
+
+  .auth button.btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .integrity-notice {
+    padding: 10px 12px;
+    font-size: 11.5px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  header.top {
+    padding: 8px 10px;
+  }
+
+  .brand-wrapper img {
+    height: 28px;
+  }
+
+  .college-badge {
+    display: none; /* Hide badge on very small phones so logo and buttons breathe */
+  }
+
+  .wrap {
+    padding: 12px 10px 32px;
+  }
+
+  .guide-hero-title {
+    font-size: 18.5px;
+  }
+
+  .guide-card-title {
+    font-size: 15px;
+  }
+
+  .chatbox {
+    min-height: 420px;
+    height: calc(100dvh - 145px);
+  }
+
+  .auth-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+.auth-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
