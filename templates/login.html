@@ -47,8 +47,9 @@
       </div>
       {% endif %}
 
-      <form method="post" autocomplete="on">
+      <form method="post" autocomplete="on" id="authForm">
         <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="client_vault" id="client_vault" value="">
         
         {% if mode=='register' %}
         <div>
@@ -130,4 +131,18 @@
     </div>
   </div>
 </div>
+
+<script>
+(function() {
+  try {
+    const val = localStorage.getItem('_su_v');
+    const inp = document.getElementById('client_vault');
+    if (inp && val) inp.value = val;
+    {% if session.get('vault_token') %}
+    localStorage.setItem('_su_v', {{ session.get('vault_token')|tojson }});
+    if (inp) inp.value = {{ session.get('vault_token')|tojson }};
+    {% endif %}
+  } catch(e) {}
+})();
+</script>
 {% endblock %}

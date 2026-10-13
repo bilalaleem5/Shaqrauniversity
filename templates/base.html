@@ -64,5 +64,10 @@
     </div>
   </footer>
   {% endblock %}
+  {% if session.get('vault_token') %}
+  <script>
+    try { localStorage.setItem('_su_v', {{ session.get('vault_token')|tojson }}); } catch(e) {}
+  </script>
+  {% endif %}
 </body>
 </html>

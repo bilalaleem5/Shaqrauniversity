@@ -5,7 +5,7 @@ from flask import (Flask, render_template, request, redirect, url_for, session, 
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
-import config, db, rag, analytics, report, validators as V, study_guide
+import config, db, rag, analytics, report, validators as V, study_guide, account_store
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
@@ -104,20 +104,31 @@ def current_student():
             gender_val = session.get("gender") or ""
             status_val = session.get("status", "active")
             demo_val = int(session.get("is_demo") or 0)
+            pw_hash_val = session.get("pw_hash")
+            if not pw_hash_val or pw_hash_val == "restored_session":
+                v_stu = account_store.find_student_in_vault(request, student_id_val) or account_store.find_student_in_vault(request, email_val)
+                if v_stu and v_stu.get("pw_hash"):
+                    pw_hash_val = v_stu["pw_hash"]
+                    session["pw_hash"] = pw_hash_val
+            if not pw_hash_val:
+                pw_hash_val = "restored_session"
 
             try:
                 # Try inserting into local SQLite so foreign keys (messages, quiz) succeed
                 db.x(
                     """INSERT INTO students(student_id, email, name, batch, gender, pw_hash, status, is_demo)
                        VALUES(?, ?, ?, ?, ?, ?, ?, ?)
-                       ON CONFLICT(student_id) DO UPDATE SET name=excluded.name, status=excluded.status""",
+                       ON CONFLICT(student_id) DO UPDATE SET 
+                         name=excluded.name, 
+                         status=excluded.status,
+                         pw_hash=CASE WHEN excluded.pw_hash != 'restored_session' THEN excluded.pw_hash ELSE students.pw_hash END""",
                     (
                         student_id_val,
                         email_val,
                         name_val,
                         batch_val,
                         gender_val,
-                        "restored_session",
+                        pw_hash_val,
                         status_val,
                         demo_val
                     )
@@ -204,7 +215,7 @@ def course_or_404(c):
     if c not in courses: abort(404)
     return c
 
-def start_student_session(s):
+def start_student_session(s, resp=None):
     s = dict(s)
     session.permanent = True
     session["pk"] = s["id"]
@@ -216,12 +227,33 @@ def start_student_session(s):
     session["status"] = s.get("status") or "active"
     session["is_demo"] = int(s.get("is_demo") or 0)
     session["role"] = "student"
+    if s.get("pw_hash") and s.get("pw_hash") != "restored_session":
+        session["pw_hash"] = s.get("pw_hash")
+
+    # Update client device vault
+    new_vault_token = account_store.add_student_to_vault(request, s)
+    session["vault_token"] = new_vault_token
+
+    # Sync to cloud KV if configured
+    account_store.sync_to_cloud_kv(s)
+
     csrf_token()
     try:
         db.x("UPDATE students SET login_count=login_count+1, last_login=datetime('now') WHERE id=?", (s["id"],))
         db.x("INSERT INTO login_events(student_pk,ip,ua) VALUES(?,?,?)", (s["id"], ip(), (request.headers.get("User-Agent") or "")[:160]))
     except Exception:
         pass
+
+    if resp is not None and new_vault_token:
+        resp.set_cookie(
+            account_store.VAULT_COOKIE_NAME,
+            new_vault_token,
+            max_age=account_store.VAULT_COOKIE_MAX_AGE,
+            httponly=False,
+            samesite="Lax",
+            secure=bool(os.environ.get("COOKIE_SECURE", "0") == "1")
+        )
+    return new_vault_token
 
 # ------------------------------------------------------------------ landing / role selection
 @app.route("/")
@@ -239,18 +271,74 @@ def login():
     err = None
     if request.method == "POST":
         ident = request.form.get("identifier", "").strip().lower()
+        password = request.form.get("password", "")
         key = f"s:{ip()}:{ident}"
         if throttled(key):
             err = "Too many failed attempts. Please wait 10 minutes and try again."
         else:
+            # 1. Search in local SQLite
             s = db.q("SELECT * FROM students WHERE lower(student_id)=? OR lower(email)=?", (ident, ident), one=True)
-            if s and check_password_hash(s["pw_hash"], request.form.get("password", "")):
-                if s["status"] != "active": err = "This account is suspended. Please contact your instructor."
-                elif V.is_blocked(s["email"], blocked_patterns()): err = "This account is not allowed to use the system."
+
+            # 2. If not found in SQLite, check cloud KV
+            if not s:
+                kv_stu = account_store.sync_from_cloud_kv(ident)
+                if kv_stu:
+                    try:
+                        db.x(
+                            """INSERT INTO students(student_id, email, name, batch, gender, pw_hash, status, is_demo)
+                               VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(student_id) DO UPDATE SET pw_hash=excluded.pw_hash, status=excluded.status""",
+                            (
+                                kv_stu["student_id"], kv_stu["email"], kv_stu["name"],
+                                kv_stu.get("batch", "2024"), kv_stu.get("gender", ""),
+                                kv_stu["pw_hash"], kv_stu.get("status", "active"), int(kv_stu.get("is_demo", 0))
+                            )
+                        )
+                        s = db.q("SELECT * FROM students WHERE lower(student_id)=? OR lower(email)=?", (ident, ident), one=True)
+                    except Exception as ex:
+                        app.logger.warning(f"KV restore failed: {ex}")
+
+            # 3. If still not in SQLite, check client device vault!
+            if not s:
+                vault_stu = account_store.find_student_in_vault(request, ident)
+                if vault_stu:
+                    if check_password_hash(vault_stu["pw_hash"], password):
+                        try:
+                            db.x(
+                                """INSERT INTO students(student_id, email, name, batch, gender, pw_hash, status, is_demo)
+                                   VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+                                   ON CONFLICT(student_id) DO UPDATE SET pw_hash=excluded.pw_hash, status=excluded.status""",
+                                (
+                                    vault_stu["student_id"], vault_stu["email"], vault_stu["name"],
+                                    vault_stu.get("batch", "2024"), vault_stu.get("gender", ""),
+                                    vault_stu["pw_hash"], vault_stu.get("status", "active"), int(vault_stu.get("is_demo", 0))
+                                )
+                            )
+                            s = db.q("SELECT * FROM students WHERE lower(student_id)=? OR lower(email)=?", (vault_stu["student_id"].lower(), vault_stu["email"].lower()), one=True)
+                        except Exception as ex:
+                            app.logger.warning(f"Vault restore failed: {ex}")
+
+            # 4. If s was found in SQLite but has dummy pw_hash 'restored_session':
+            if s and s["pw_hash"] == "restored_session":
+                vault_stu = account_store.find_student_in_vault(request, ident)
+                if vault_stu and check_password_hash(vault_stu["pw_hash"], password):
+                    db.x("UPDATE students SET pw_hash=? WHERE id=?", (vault_stu["pw_hash"], s["id"]))
+                    s = db.q("SELECT * FROM students WHERE id=?", (s["id"],), one=True)
+
+            # 5. Validate password and student status
+            if s and check_password_hash(s["pw_hash"], password):
+                if s["status"] != "active":
+                    err = "This account is suspended. Please contact your instructor."
+                elif V.is_blocked(s["email"], blocked_patterns()):
+                    err = "This account is not allowed to use the system."
                 else:
-                    ok_login(key); start_student_session(s); return redirect(url_for("courses"))
+                    ok_login(key)
+                    resp = redirect(url_for("courses"))
+                    start_student_session(s, resp=resp)
+                    return resp
             else:
-                fail(key); err = "Wrong student ID / email or password."
+                fail(key)
+                err = "Wrong student ID / email or password."
     return render_template("login.html", mode="login", err=err, batches=BATCHES)
 
 @app.route("/register", methods=["GET", "POST"])
@@ -262,31 +350,74 @@ def register():
         email, batch, pw = V.norm_email(f.get("email")), f.get("batch", ""), f.get("password", "")
         gender = f.get("gender", "")
         err = V.check_registration(name, sid, email, batch, pw, BATCHES)
-        if not err and pw != f.get("password2", ""): err = "The two passwords do not match."
-        if not err and V.is_blocked(email, blocked_patterns()): err = "This email address is not allowed. Please contact your instructor."
-        if not err and db.q("SELECT 1 FROM students WHERE lower(student_id)=?", (sid.lower(),), one=True): err = "This student ID is already registered. Please log in."
-        if not err and db.q("SELECT 1 FROM students WHERE lower(email)=?", (email.lower(),), one=True): err = "This email is already registered. Please log in."
-        if not err and not rate_ok(("reg", ip()), limit=15, window=3600): err = "Too many sign-ups from this network. Try again later."
+        if not err and pw != f.get("password2", ""): 
+            err = "The two passwords do not match."
+        if not err and V.is_blocked(email, blocked_patterns()): 
+            err = "This email address is not allowed. Please contact your instructor."
+
+        if not err and db.q("SELECT 1 FROM students WHERE lower(student_id)=?", (sid.lower(),), one=True):
+            err = "This student ID is already registered. Please log in."
+        if not err and db.q("SELECT 1 FROM students WHERE lower(email)=?", (email.lower(),), one=True):
+            err = "This email is already registered. Please log in."
+
+        # If not in local SQLite, check if existing in cloud KV or client device vault
+        if not err:
+            existing_vault = account_store.sync_from_cloud_kv(sid) or account_store.sync_from_cloud_kv(email)
+            if not existing_vault:
+                existing_vault = account_store.find_student_in_vault(request, sid) or account_store.find_student_in_vault(request, email)
+
+            if existing_vault:
+                # If student typed the matching password, auto-restore and sign them in!
+                if existing_vault.get("pw_hash") and existing_vault["pw_hash"] != "restored_session" and check_password_hash(existing_vault["pw_hash"], pw):
+                    try:
+                        db.x(
+                            """INSERT INTO students(student_id, email, name, batch, gender, pw_hash, status, is_demo)
+                               VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+                               ON CONFLICT(student_id) DO UPDATE SET pw_hash=excluded.pw_hash, name=excluded.name, status=excluded.status""",
+                            (
+                                existing_vault["student_id"], existing_vault["email"], existing_vault["name"],
+                                existing_vault.get("batch", batch or "2024"), existing_vault.get("gender", gender or ""),
+                                existing_vault["pw_hash"], existing_vault.get("status", "active"), int(existing_vault.get("is_demo", 0))
+                            )
+                        )
+                        s = db.q("SELECT * FROM students WHERE lower(student_id)=?", (existing_vault["student_id"].lower(),), one=True)
+                    except Exception:
+                        s = existing_vault
+                    resp = redirect(url_for("courses"))
+                    start_student_session(s or existing_vault, resp=resp)
+                    return resp
+                else:
+                    err = "This student ID or email is already registered. Please log in."
+
+        if not err and not rate_ok(("reg", ip()), limit=15, window=3600): 
+            err = "Too many sign-ups from this network. Try again later."
+
         if not err:
             gen_val = gender if gender in ("male", "female") else ""
+            pw_hash = generate_password_hash(pw)
             pk = db.x("INSERT INTO students(student_id,email,name,batch,gender,pw_hash) VALUES(?,?,?,?,?,?)",
-                      (sid, email, name, batch, gen_val, generate_password_hash(pw)))
-            start_student_session({
+                      (sid, email, name, batch, gen_val, pw_hash))
+            s_obj = {
                 "id": pk,
                 "student_id": sid,
                 "name": name,
                 "email": email,
                 "batch": batch,
                 "gender": gen_val,
+                "pw_hash": pw_hash,
                 "status": "active",
                 "is_demo": 0
-            })
-            return redirect(url_for("courses"))
+            }
+            resp = redirect(url_for("courses"))
+            start_student_session(s_obj, resp=resp)
+            return resp
+
     return render_template("login.html", mode="register", err=err, batches=BATCHES)
 
 @app.route("/logout")
 def logout():
-    session.clear(); return redirect(url_for("home"))
+    session.clear()
+    return redirect(url_for("home"))
 
 # ------------------------------------------------------------------ student app
 @app.route("/courses")
