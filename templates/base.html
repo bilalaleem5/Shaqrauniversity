@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="csrf" content="{{ csrf }}">
   <title>{% block title %}AI Course Tutor - Shaqra University{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,10 +17,14 @@
     if (!window.katex) document.write('<link rel="stylesheet" href="{{ url_for("static", filename="vendor/katex.min.css") }}"><script src="{{ url_for("static", filename="vendor/katex.min.js") }}"><\\/script>');
     if (!window.marked) document.write('<script src="{{ url_for("static", filename="vendor/marked.min.js") }}"><\\/script>');
     if (!window.DOMPurify) document.write('<script src="{{ url_for("static", filename="vendor/purify.min.js") }}"><\\/script>');
+    function toggleMobileNav() {
+      var m = document.getElementById('mobileNavMenu');
+      if (m) m.classList.toggle('hide');
+    }
   </script>
   {% block head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   {% block header %}
   <header class="top">
     <a href="/" class="brand-wrapper">

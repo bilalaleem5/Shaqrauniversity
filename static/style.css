@@ -3110,58 +3110,198 @@ textarea.big {
 }
 
 /* ==========================================================================
+   Mobile Navigation Drawer & Modal Components
+   ========================================================================== */
+
+.desktop-nav-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-more-btn {
+  display: none !important;
+}
+
+.mobile-nav-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.mobile-nav-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+.mobile-nav-card {
+  position: relative;
+  z-index: 10000;
+  background: #ffffff;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px 18px max(24px, env(safe-area-inset-bottom));
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 80dvh;
+  overflow-y: auto;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mobile-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.mobile-nav-close {
+  background: var(--slate-100);
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: var(--slate-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.mobile-nav-close:hover {
+  background: var(--slate-200);
+  color: var(--slate-900);
+}
+
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--slate-800);
+  font-size: 14.5px;
+  font-weight: 600;
+  background: var(--slate-50);
+  border: 1px solid var(--border-subtle);
+  transition: var(--transition);
+}
+
+.mobile-nav-row svg {
+  color: var(--navy-800);
+  flex-shrink: 0;
+}
+
+.mobile-nav-row:hover,
+.mobile-nav-row:active {
+  background: var(--navy-50);
+  border-color: var(--navy-200);
+  color: var(--navy-900);
+}
+
+.mobile-nav-row.danger {
+  color: var(--red-600);
+  background: var(--red-50);
+  border-color: var(--red-100);
+}
+
+.mobile-nav-row.danger svg {
+  color: var(--red-600);
+}
+
+/* ==========================================================================
    Comprehensive Mobile & Tablet Responsive Optimizations (<= 768px & <= 480px)
    ========================================================================== */
 
 @media (max-width: 768px) {
   /* Header & Navigation */
   header.top {
-    padding: 10px 14px;
+    padding: 8px 12px;
+    height: 52px;
     gap: 8px;
-    flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
   }
 
   .brand-wrapper {
-    gap: 10px;
+    gap: 8px;
+    flex-shrink: 1;
+    overflow: hidden;
   }
 
   .brand-wrapper img {
-    height: 32px;
+    height: 30px;
+    width: auto;
   }
 
   .college-badge {
     font-size: 10px;
-    padding: 3px 8px;
-    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
   }
 
   .top-nav-items {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding: 4px 0 2px;
+    flex-shrink: 0;
   }
 
-  .top-nav-items::-webkit-scrollbar {
-    display: none;
+  .desktop-nav-group,
+  .nav-desktop-only {
+    display: none !important;
   }
 
-  .top-nav-items .btn,
-  .top-nav-items .pill {
-    flex: 0 0 auto;
-    white-space: nowrap;
-    font-size: 12px;
-    padding: 6px 10px;
+  .nav-more-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+    color: var(--slate-700);
+    background: #ffffff;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .nav-text-hide-sm {
+    display: none !important;
   }
 
   .header-user {
-    width: 100%;
-    justify-content: space-between;
+    display: inline-flex;
+    align-items: center;
     gap: 8px;
   }
 
@@ -3170,18 +3310,26 @@ textarea.big {
     gap: 6px;
   }
 
+  .user-role-desktop {
+    display: none !important;
+  }
+
+  .nav-logout-text {
+    display: none !important;
+  }
+
   .avatar {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     font-size: 11px;
   }
 
   .user-name {
-    font-size: 12px;
-  }
-
-  .user-role {
-    font-size: 10.5px;
+    font-size: 12.5px;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* Layout Wrappers */
@@ -3545,15 +3693,99 @@ textarea.big {
     padding: 9px 12px;
   }
 
-  /* Courses List on Mobile */
-  .course-card {
-    padding: 18px 16px;
+  /* Landing Page on Mobile */
+  .landing-hero-bg {
+    padding: 24px 14px 48px;
+  }
+
+  .landing-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 28px;
+    gap: 12px;
+  }
+
+  .landing-brand {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .landing-brand-text {
+    align-items: center;
+  }
+
+  .univ-name {
+    font-size: 16px;
+  }
+
+  .dept-name {
+    font-size: 12px;
+  }
+
+  .landing-title {
+    font-size: 26px !important;
+    line-height: 1.25 !important;
+    margin-bottom: 12px;
+  }
+
+  .landing-subtitle {
+    font-size: 13.5px;
+    line-height: 1.5;
+    margin-bottom: 26px;
+  }
+
+  .landing-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    margin-bottom: 30px !important;
+  }
+
+  .portal-card {
+    padding: 24px 18px !important;
     border-radius: var(--radius-lg);
   }
 
-  .course-code-badge {
-    font-size: 11px;
-    padding: 3px 8px;
+  .portal-name {
+    font-size: 20px;
+  }
+
+  .portal-desc {
+    font-size: 13.5px;
+    margin-bottom: 16px;
+  }
+
+  .portal-features {
+    margin-bottom: 22px;
+    gap: 8px;
+  }
+
+  .portal-features li {
+    font-size: 13px;
+  }
+
+  .portal-btn {
+    padding: 12px 18px;
+    font-size: 14px;
+    min-height: 46px;
+  }
+
+  .landing-footer-banner {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  /* Courses Dashboard on Mobile */
+  .g2 {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .course-card {
+    padding: 18px 16px !important;
+    border-radius: var(--radius-lg);
   }
 
   .course-title {
@@ -3563,7 +3795,7 @@ textarea.big {
 
   .course-program {
     font-size: 12px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .course-desc {
@@ -3578,7 +3810,7 @@ textarea.big {
   }
 
   .course-tags .pill {
-    font-size: 10.5px;
+    font-size: 11px;
     padding: 3px 8px;
   }
 
@@ -3588,20 +3820,23 @@ textarea.big {
   }
 
   .course-main-btn {
-    padding: 10px 16px;
-    font-size: 13.5px;
+    padding: 11px 16px;
+    font-size: 14px;
+    min-height: 44px;
   }
 
   .course-sub-actions {
-    flex-direction: column;
-    gap: 6px;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
   }
 
   .course-sub-actions .btn {
-    width: 100%;
-    justify-content: center;
-    font-size: 12.5px;
-    padding: 8px 12px;
+    width: 100% !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    padding: 9px 8px !important;
+    min-height: 40px !important;
   }
 
   .guardrail-banner {
@@ -3610,8 +3845,8 @@ textarea.big {
   }
 
   .guardrail-icon {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
   }
 
   .guardrail-content b {
@@ -3621,6 +3856,214 @@ textarea.big {
   .guardrail-content p {
     font-size: 11.5px;
     line-height: 1.4;
+  }
+
+  /* ==========================================================================
+     Native Mobile App Chat Experience (Full Screen, Docked Composer, No Footer)
+     ========================================================================== */
+
+  body.chat-page-active {
+    height: 100dvh;
+    height: 100vh;
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    background: #f8fafc;
+  }
+
+  body.chat-page-active header.top {
+    flex-shrink: 0;
+    height: 52px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: #ffffff;
+    z-index: 100;
+  }
+
+  body.chat-page-active .site-footer {
+    display: none !important;
+  }
+
+  body.chat-page-active .page-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  body.chat-page-active .wrap {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  body.chat-page-active .tabbar {
+    flex-shrink: 0;
+    margin: 6px 10px;
+    padding: 3px;
+    border-radius: var(--radius-full);
+    background: var(--slate-100);
+    gap: 4px;
+    display: flex;
+  }
+
+  body.chat-page-active .tabbar button {
+    flex: 1;
+    padding: 7px 12px;
+    font-size: 12.5px;
+    border-radius: var(--radius-full);
+  }
+
+  body.chat-page-active .tabbar .tabbar-link {
+    display: none !important;
+  }
+
+  body.chat-page-active .chatbox {
+    flex: 1;
+    min-height: 0;
+    height: auto !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    display: flex;
+    flex-direction: column;
+    background: #f8fafc;
+  }
+
+  body.chat-page-active .chat-banner {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  body.chat-page-active .chat-banner .subtext {
+    display: none !important;
+  }
+
+  body.chat-page-active .chat-banner-title {
+    font-size: 13px;
+  }
+
+  body.chat-page-active .chips {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    gap: 6px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border-subtle);
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    display: flex;
+  }
+
+  body.chat-page-active .chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.chat-page-active .chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 5px 12px;
+    font-size: 11.5px;
+  }
+
+  body.chat-page-active .msgs {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto !important;
+    padding: 12px 10px;
+    gap: 12px;
+    -webkit-overflow-scrolling: touch;
+    background: #f8fafc;
+  }
+
+  body.chat-page-active .msg-row {
+    max-width: 95% !important;
+    gap: 8px !important;
+  }
+
+  body.chat-page-active .msg-avatar {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 12px !important;
+  }
+
+  body.chat-page-active .msg-bubble {
+    padding: 10px 13px !important;
+    font-size: 13.5px !important;
+    line-height: 1.5 !important;
+    border-radius: 14px !important;
+  }
+
+  body.chat-page-active .composer {
+    flex-shrink: 0;
+    padding: 8px 10px max(10px, env(safe-area-inset-bottom)) !important;
+    background: #ffffff;
+    border-top: 1px solid var(--border);
+    gap: 8px;
+    position: relative;
+    z-index: 10;
+  }
+
+  body.chat-page-active .composer textarea {
+    font-size: 16px !important; /* Critical: stops iOS auto-zoom */
+    padding: 9px 14px;
+    min-height: 42px;
+    max-height: 110px;
+    border-radius: 20px;
+    line-height: 1.35;
+  }
+
+  body.chat-page-active .composer button.btn {
+    width: 42px !important;
+    height: 42px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0;
+  }
+
+  body.chat-page-active .composer button.btn span {
+    display: none !important;
+  }
+
+  body.chat-page-active .composer button.btn svg {
+    width: 17px;
+    height: 17px;
+    margin: 0 !important;
+  }
+
+  body.chat-page-active .composer-hint {
+    display: none !important;
+  }
+
+  /* Quiz Pane inside Chat view on Mobile */
+  body.chat-page-active #pQuiz {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 16px 12px !important;
+    background: #ffffff;
   }
 
   /* Auth / Login on Mobile */
@@ -3667,12 +4110,19 @@ textarea.big {
   .auth input,
   .auth select {
     font-size: 16px !important; /* Prevents iOS auto-zoom on input tap */
-    padding: 11px 14px;
+    padding: 12px 14px;
+    min-height: 44px;
+  }
+
+  .auth-grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
   }
 
   .auth button.btn {
     padding: 12px;
     font-size: 14px;
+    min-height: 46px;
   }
 
   .integrity-notice {
@@ -3685,14 +4135,15 @@ textarea.big {
 @media (max-width: 480px) {
   header.top {
     padding: 8px 10px;
+    height: 50px;
   }
 
   .brand-wrapper img {
-    height: 28px;
+    height: 26px;
   }
 
   .college-badge {
-    display: none; /* Hide badge on very small phones so logo and buttons breathe */
+    display: none !important; /* Hide badge on narrow phones so logo and buttons breathe */
   }
 
   .wrap {
@@ -3700,27 +4151,16 @@ textarea.big {
   }
 
   .guide-hero-title {
-    font-size: 18.5px;
+    font-size: 18.5px !important;
   }
 
   .guide-card-title {
     font-size: 15px;
   }
 
-  .chatbox {
-    min-height: 420px;
-    height: calc(100dvh - 145px);
-  }
-
   .auth-grid-2 {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr !important;
   }
 }
 
-.auth-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
 

@@ -2,21 +2,21 @@
 {% block title %}My Courses - AI Course Tutor{% endblock %}
 
 {% block nav %}
-<div class="header-user top-nav-items">
-  <a class="btn alt sm" href="/feedback" title="Submit feedback or report issues">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="12" cy="11" r="1"></circle><circle cx="16" cy="11" r="1"></circle><circle cx="8" cy="11" r="1"></circle></svg>
-    <span>Feedback &amp; Help</span>
-  </a>
+<div class="header-user">
   <div class="user-pill">
     <div class="avatar">{{ student.name[:1]|upper if student and student.name else 'S' }}</div>
     <div class="user-meta">
-      <span class="user-name">{{ student.name }}</span>
-      <span class="user-role">Batch {{ student.batch }} &middot; ID {{ student.student_id }}</span>
+      <span class="user-name">{{ student.name.split()[0] if student and student.name else 'Student' }}</span>
+      <span class="user-role user-role-desktop">Batch {{ student.batch }} &middot; ID {{ student.student_id }}</span>
     </div>
   </div>
+  <a class="btn alt sm nav-desktop-only" href="/feedback" title="Submit feedback or report issues">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="12" cy="11" r="1"></circle><circle cx="16" cy="11" r="1"></circle><circle cx="8" cy="11" r="1"></circle></svg>
+    <span>Feedback</span>
+  </a>
   <a class="btn alt sm" href="/logout" title="Log out">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-    Log out
+    <span class="nav-logout-text">Log out</span>
   </a>
 </div>
 {% endblock %}
