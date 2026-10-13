@@ -48,6 +48,21 @@
   </div>
   {% endif %}
 
-  {% block body %}{% endblock %}
+  <main class="page-body">
+    {% block body %}{% endblock %}
+  </main>
+
+  {% block footer %}
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div class="site-footer-copy">
+        <span>جامعة شقراء &middot; Shaqra University &middot; College of Pharmacy</span>
+      </div>
+      <div class="site-footer-credit">
+        <span>Developed by <a href="https://zetamize.com" target="_blank" rel="noopener noreferrer" class="credit-link">Zetamize</a></span>
+      </div>
+    </div>
+  </footer>
+  {% endblock %}
 </body>
 </html>

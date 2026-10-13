@@ -80,6 +80,12 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-body {
+  flex: 1 0 auto;
 }
 
 /* Headings & Text */
@@ -2436,3 +2442,95 @@ textarea.big {
     justify-content: flex-end;
   }
 }
+
+/* ==========================================================================
+   Footer & Developer Attribution
+   ========================================================================== */
+.site-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  background: #ffffff;
+  padding: 16px 24px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.site-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.site-footer-copy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--slate-500);
+  font-weight: 500;
+}
+
+.site-footer-credit {
+  font-weight: 500;
+  color: var(--slate-600);
+}
+
+.site-footer .credit-link {
+  color: var(--navy-800);
+  font-weight: 700;
+  text-decoration: none;
+  transition: var(--transition);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  background: var(--navy-50);
+  border: 1px solid var(--navy-100);
+  display: inline-flex;
+  align-items: center;
+}
+
+.site-footer .credit-link:hover {
+  color: #ffffff;
+  background: var(--navy-800);
+  border-color: var(--navy-800);
+}
+
+/* Landing Page Developer Credit */
+.landing-dev-credit {
+  margin-top: 28px;
+  text-align: center;
+  font-size: 13.5px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.landing-dev-credit a {
+  color: #38bdf8;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 3px 10px;
+  border-radius: var(--radius-xs);
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.landing-dev-credit a:hover {
+  background: #38bdf8;
+  color: #07172c;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
+}
+
+@media (max-width: 640px) {
+  .site-footer-inner {
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+    gap: 8px;
+  }
+}
+
