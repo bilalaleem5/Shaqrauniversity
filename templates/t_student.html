@@ -31,7 +31,7 @@
             {{ base.email or 'No email' }} &middot;
             Batch {{ base.batch }} &middot;
             Section: {{ 'Male' if base.gender=='male' else ('Female' if base.gender=='female' else '&mdash;')|safe }} &middot;
-            Registered: {{ base.created_at[:16] }} &middot;
+            Registered: {{ (base.created_at|string)[:16] }} &middot;
             <b>{{ base.login_count }}</b> Logins
           </div>
         </div>
@@ -208,7 +208,7 @@
             {% if m.topic %}
             <span class="pill" style="font-size:11px">{{ m.topic }}</span>
             {% endif %}
-            <span class="muted" style="font-size:11.5px">{{ m.created_at[:16] }}</span>
+            <span class="muted" style="font-size:11.5px">{{ (m.created_at|string)[:16] }}</span>
           </div>
         </div>
         {% endfor %}
@@ -239,7 +239,7 @@
           <tbody>
             {% for l in logins %}
             <tr>
-              <td>{{ l.at[:16] }}</td>
+              <td>{{ (l.at|string)[:16] }}</td>
               <td><span class="pill" style="font-family:monospace">{{ l.ip }}</span></td>
             </tr>
             {% endfor %}

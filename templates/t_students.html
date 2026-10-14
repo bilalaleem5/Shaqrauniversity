@@ -64,8 +64,8 @@
               <span class="muted">&mdash;</span>
               {% endif %}
             </td>
-            <td style="font-size:12px;color:var(--text-muted)">{{ r.created_at[:16] }}</td>
-            <td style="font-size:12px;color:var(--text-muted)">{{ (r.last_login or '&mdash;')[:16]|safe }}</td>
+            <td style="font-size:12px;color:var(--text-muted)">{{ (r.created_at|string)[:16] }}</td>
+            <td style="font-size:12px;color:var(--text-muted)">{{ ((r.last_login|string)[:16]) if r.last_login else '&mdash;'|safe }}</td>
             <td><b>{{ r.login_count }}</b></td>
             <td><b>{{ r.msgs }}</b></td>
             <td><b>{{ r.quizzes }}</b></td>

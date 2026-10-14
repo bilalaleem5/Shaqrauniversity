@@ -77,7 +77,7 @@
               {% endif %}
             </div>
             <div class="subtext" style="font-size:12px;margin-left:36px">
-              Username: <code>{{ t.username }}</code> &middot; Updated: {{ t.updated_at[:10] if t.updated_at else 'Active' }}
+              Username: <code>{{ t.username }}</code> &middot; Updated: {{ (t.updated_at|string)[:10] if t.updated_at else 'Active' }}
             </div>
           </div>
 

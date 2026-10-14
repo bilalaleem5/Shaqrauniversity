@@ -816,10 +816,18 @@ def export_csv():
 
 # ------------------------------------------------------------------ teacher: user management
 def _students_rows():
-    return db.q("""SELECT s.*, (SELECT COUNT(*) FROM messages m WHERE m.student_pk=s.id) msgs,
+    rows = db.q("""SELECT s.*, (SELECT COUNT(*) FROM messages m WHERE m.student_pk=s.id) msgs,
         (SELECT COUNT(*) FROM quiz z WHERE z.student_pk=s.id AND z.is_correct IS NOT NULL) quizzes,
-        (SELECT ROUND(100.0*SUM(is_correct)/COUNT(*),0) FROM quiz z WHERE z.student_pk=s.id AND z.is_correct IS NOT NULL) acc
+        (SELECT SUM(is_correct) FROM quiz z WHERE z.student_pk=s.id AND z.is_correct IS NOT NULL) quiz_ok
         FROM students s ORDER BY s.created_at DESC""")
+    out = []
+    for r in rows:
+        d = dict(r)
+        q_count = d.get("quizzes") or 0
+        q_ok = d.get("quiz_ok") or 0
+        d["acc"] = round(100.0 * q_ok / q_count, 0) if q_count > 0 else None
+        out.append(db.RowDict(d, list(d.keys())))
+    return out
 
 @app.route("/teacher/students")
 @teacher_required

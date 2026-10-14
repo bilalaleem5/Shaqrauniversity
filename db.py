@@ -1,4 +1,4 @@
-import sqlite3, os, re, logging
+import sqlite3, os, re, logging, datetime
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from werkzeug.security import generate_password_hash
 import config
@@ -289,6 +289,35 @@ def init():
                       (config.TEACHER_USERNAME.lower(), config.INSTRUCTOR_NAME, generate_password_hash(config.TEACHER_PASSWORD)))
         c.execute("UPDATE teachers SET is_admin=1 WHERE id=(SELECT MIN(id) FROM teachers) AND is_admin=0")
 
+class RowDict(dict):
+    """Row object that supports dictionary keys, attribute access, and integer indexing."""
+    def __init__(self, data=None, keys=None):
+        super().__init__(data or {})
+        self._keys = list(keys) if keys is not None else list(self.keys())
+
+    def __getitem__(self, item):
+        if isinstance(item, int):
+            return super().__getitem__(self._keys[item])
+        return super().__getitem__(item)
+
+    def __getattr__(self, name):
+        if name in self:
+            return self[name]
+        raise AttributeError(f"'RowDict' object has no attribute '{name}'")
+
+def _clean_val(v):
+    if isinstance(v, datetime.datetime):
+        return v.strftime("%Y-%m-%d %H:%M:%S")
+    if isinstance(v, datetime.date):
+        return v.strftime("%Y-%m-%d")
+    return v
+
+def _wrap_row(r, keys):
+    if r is None:
+        return None
+    d = {k: _clean_val(r[k]) for k in keys}
+    return RowDict(d, keys)
+
 def q(sql, args=(), one=False):
     sql_pg = _translate_sql(sql)
     if IS_POSTGRES:
@@ -298,13 +327,22 @@ def q(sql, args=(), one=False):
             with c.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
                 cur.execute(sql_pg, args)
                 rows = cur.fetchall()
-                return (rows[0] if rows else None) if one else rows
+                if not rows:
+                    return None if one else []
+                keys = [desc[0] for desc in cur.description]
+                clean_rows = [_wrap_row(r, keys) for r in rows]
+                return clean_rows[0] if one else clean_rows
         finally:
             c.close()
 
     with conn() as c:
-        rows = c.execute(sql, args).fetchall()
-    return (rows[0] if rows else None) if one else rows
+        cur = c.execute(sql, args)
+        rows = cur.fetchall()
+        if not rows:
+            return None if one else []
+        keys = [desc[0] for desc in cur.description] if cur.description else []
+        clean_rows = [_wrap_row(r, keys) for r in rows]
+        return clean_rows[0] if one else clean_rows
 
 def x(sql, args=()):
     sql_pg = _translate_sql(sql)
