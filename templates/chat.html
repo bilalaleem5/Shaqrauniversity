@@ -113,13 +113,18 @@
           {{ cfg.program }} &middot; Grounded in official syllabus &amp; slides
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn alt sm" id="clearChatBtn" title="Start a fresh conversation" style="font-size:11.5px;padding:4px 9px;gap:5px" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          <span class="nav-text-hide-sm">New Chat</span>
+        </button>
         <span class="pill good" style="font-size:11px">
           <span style="display:inline-block;width:6px;height:6px;background:var(--emerald-500);border-radius:50%"></span>
           Guardrails Active
         </span>
       </div>
     </div>
+
 
     <div class="chips">
       {% if guide %}
@@ -207,7 +212,11 @@
 <script>
 const C = "{{ course }}";
 const $ = s => document.querySelector(s);
+const studentId = {{ (student.student_id or student.id)|tojson }};
+const storageKey = 'su_chat_v2_' + C + '_' + studentId;
+const serverHistory = {{ initial_history|tojson }};
 let hist = [];
+let clientMessages = [];
 
 function renderContent(rawText) {
   if (!rawText) return '';
@@ -365,6 +374,18 @@ async function ask(text, intro) {
   }
   add('a', r.answer, r.sources);
   hist.push({ role: 'assistant', content: r.answer });
+
+  if (!intro) {
+    clientMessages.push({
+      question: text,
+      answer: r.answer,
+      sources: r.sources,
+      created_at: new Date().toISOString()
+    });
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(clientMessages));
+    } catch(e) {}
+  }
 }
 
 $('#send').onclick = () => {
@@ -385,8 +406,66 @@ $('#inp').addEventListener('keydown', e => {
 $('#intro').onclick = () => ask('', true);
 document.querySelectorAll('[data-q]').forEach(c => c.onclick = () => ask(c.dataset.q));
 
-// Initial greeting
-add('a', 'Hello! I am your AI academic tutor for {{ cfg.title }}. Ask me any question from your lecture slides and syllabus, or switch to the Practice & Quizzes tab to test your mastery.');
+// Clear conversation handler
+const clearBtn = $('#clearChatBtn');
+if (clearBtn) {
+  clearBtn.onclick = async () => {
+    if (!confirm('Start a fresh conversation? This will clear your chat history for this course.')) return;
+    clientMessages = [];
+    hist = [];
+    try { localStorage.removeItem(storageKey); } catch(e) {}
+    await post('/api/chat/' + C + '/clear', {});
+    $('#msgs').innerHTML = '';
+    add('a', 'Hello! I am your AI academic tutor for {{ cfg.title }}. Ask me any question from your lecture slides and syllabus, or switch to the Practice & Quizzes tab to test your mastery.');
+  };
+}
+
+// Render saved conversation history or initial greeting
+function renderHistory() {
+  let historyToUse = [];
+  if (serverHistory && serverHistory.length > 0) {
+    historyToUse = serverHistory;
+    try { localStorage.setItem(storageKey, JSON.stringify(serverHistory)); } catch(e) {}
+  } else {
+    try {
+      const localData = localStorage.getItem(storageKey);
+      if (localData) {
+        historyToUse = JSON.parse(localData);
+        // Silently sync local messages back to server
+        if (historyToUse.length > 0) {
+          post('/api/chat/' + C + '/sync', { messages: historyToUse });
+        }
+      }
+    } catch(e) {}
+  }
+
+  clientMessages = historyToUse || [];
+  $('#msgs').innerHTML = '';
+  hist = [];
+
+  if (clientMessages.length > 0) {
+    const div = document.createElement('div');
+    div.className = 'history-divider';
+    div.innerHTML = '<span>Previous Conversation</span>';
+    $('#msgs').appendChild(div);
+
+    for (const m of clientMessages) {
+      if (m.question) {
+        add('user', m.question);
+        hist.push({ role: 'user', content: m.question });
+      }
+      if (m.answer) {
+        add('a', m.answer, m.sources);
+        hist.push({ role: 'assistant', content: m.answer });
+      }
+    }
+    $('#msgs').scrollTop = $('#msgs').scrollHeight;
+  } else {
+    add('a', 'Hello! I am your AI academic tutor for {{ cfg.title }}. Ask me any question from your lecture slides and syllabus, or switch to the Practice & Quizzes tab to test your mastery.');
+  }
+}
+
+renderHistory();
 
 const initPrompt = {{ initial_prompt|tojson }};
 if (initPrompt) {
@@ -395,6 +474,7 @@ if (initPrompt) {
     ask(initPrompt);
   }, 350);
 }
+
 
 // Tab switching
 function tab(toQuiz) {

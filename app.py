@@ -62,14 +62,19 @@ def _all_courses():
 def csrf_protect():
     if request.method == "POST":
         sent = request.form.get("csrf") or request.headers.get("X-CSRF") or ""
-        if not sent or not hmac.compare_digest(sent, session.get("csrf", "")): abort(400, "Session expired. Please reload the page.")
+        if not sent or not hmac.compare_digest(sent, session.get("csrf", "")):
+            abort(400, "Session expired. Please reload the page.")
+
 
 @app.after_request
 def headers(r):
     r.headers.setdefault("X-Content-Type-Options", "nosniff")
     r.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
-    if request.path.startswith(("/api", "/teacher", "/chat", "/courses")): r.headers["Cache-Control"] = "no-store"
+    if request.path.startswith(("/api", "/teacher", "/chat", "/courses", "/login", "/register", "/logout", "/feedback")):
+        r.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        r.headers["Pragma"] = "no-cache"
     return r
+
 
 def current_student():
     if "student" in g: return g.student
@@ -245,15 +250,17 @@ def start_student_session(s, resp=None):
         pass
 
     if resp is not None and new_vault_token:
+        is_https = request.is_secure or (request.headers.get("X-Forwarded-Proto", "").lower() == "https")
         resp.set_cookie(
             account_store.VAULT_COOKIE_NAME,
             new_vault_token,
             max_age=account_store.VAULT_COOKIE_MAX_AGE,
             httponly=False,
             samesite="Lax",
-            secure=bool(os.environ.get("COOKIE_SECURE", "0") == "1")
+            secure=is_https
         )
     return new_vault_token
+
 
 # ------------------------------------------------------------------ landing / role selection
 @app.route("/")
@@ -268,6 +275,8 @@ def healthz(): return "ok"
 # ------------------------------------------------------------------ student auth
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if request.method == "GET" and current_student():
+        return redirect(url_for("courses"))
     err = None
     if request.method == "POST":
         ident = request.form.get("identifier", "").strip().lower()
@@ -319,11 +328,18 @@ def login():
                             app.logger.warning(f"Vault restore failed: {ex}")
 
             # 4. If s was found in SQLite but has dummy pw_hash 'restored_session':
-            if s and s["pw_hash"] == "restored_session":
+            if s and (not s["pw_hash"] or s["pw_hash"] == "restored_session"):
                 vault_stu = account_store.find_student_in_vault(request, ident)
-                if vault_stu and check_password_hash(vault_stu["pw_hash"], password):
-                    db.x("UPDATE students SET pw_hash=? WHERE id=?", (vault_stu["pw_hash"], s["id"]))
-                    s = db.q("SELECT * FROM students WHERE id=?", (s["id"],), one=True)
+                if vault_stu and vault_stu.get("pw_hash") and vault_stu["pw_hash"] != "restored_session":
+                    if check_password_hash(vault_stu["pw_hash"], password):
+                        db.x("UPDATE students SET pw_hash=? WHERE id=?", (vault_stu["pw_hash"], s["id"]))
+                        s = db.q("SELECT * FROM students WHERE id=?", (s["id"],), one=True)
+                else:
+                    # Self-heal corrupted record if valid password is provided
+                    if V.check_password(password) is None:
+                        new_hash = generate_password_hash(password)
+                        db.x("UPDATE students SET pw_hash=? WHERE id=?", (new_hash, s["id"]))
+                        s = db.q("SELECT * FROM students WHERE id=?", (s["id"],), one=True)
 
             # 5. Validate password and student status
             if s and check_password_hash(s["pw_hash"], password):
@@ -343,6 +359,8 @@ def login():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    if request.method == "GET" and current_student():
+        return redirect(url_for("courses"))
     err = None
     if request.method == "POST":
         f = request.form
@@ -355,10 +373,36 @@ def register():
         if not err and V.is_blocked(email, blocked_patterns()): 
             err = "This email address is not allowed. Please contact your instructor."
 
-        if not err and db.q("SELECT 1 FROM students WHERE lower(student_id)=?", (sid.lower(),), one=True):
-            err = "This student ID is already registered. Please log in."
-        if not err and db.q("SELECT 1 FROM students WHERE lower(email)=?", (email.lower(),), one=True):
-            err = "This email is already registered. Please log in."
+        # Check existing in SQLite
+        existing_sid = db.q("SELECT * FROM students WHERE lower(student_id)=?", (sid.lower(),), one=True) if not err else None
+        existing_email = db.q("SELECT * FROM students WHERE lower(email)=?", (email.lower(),), one=True) if not err else None
+        existing = existing_sid or existing_email
+
+        if not err and existing:
+            # If account in DB has dummy 'restored_session' pw_hash, allow claiming/re-registering with new real password
+            if existing["pw_hash"] == "restored_session" or not existing["pw_hash"]:
+                gen_val = gender if gender in ("male", "female") else ""
+                pw_hash = generate_password_hash(pw)
+                db.x("UPDATE students SET name=?, batch=?, gender=?, pw_hash=?, status='active' WHERE id=?",
+                     (name, batch, gen_val, pw_hash, existing["id"]))
+                s_obj = {
+                    "id": existing["id"],
+                    "student_id": sid,
+                    "name": name,
+                    "email": email,
+                    "batch": batch,
+                    "gender": gen_val,
+                    "pw_hash": pw_hash,
+                    "status": "active",
+                    "is_demo": int(existing["is_demo"] or 0)
+                }
+                resp = redirect(url_for("courses"))
+                start_student_session(s_obj, resp=resp)
+                return resp
+            elif existing_sid:
+                err = "This student ID is already registered. Please log in."
+            elif existing_email:
+                err = "This email is already registered. Please log in."
 
         # If not in local SQLite, check if existing in cloud KV or client device vault
         if not err:
@@ -414,6 +458,7 @@ def register():
 
     return render_template("login.html", mode="register", err=err, batches=BATCHES)
 
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -454,14 +499,50 @@ def api_guide(course):
         return jsonify(error="Not found"), 404
     return jsonify(g_data)
 
+def _get_chat_history(student_pk, course, limit=100):
+    try:
+        rows = db.q(
+            "SELECT id, question, answer, topic, sources, created_at FROM messages WHERE student_pk=? AND course=? ORDER BY id ASC LIMIT ?",
+            (student_pk, course, limit)
+        )
+        items = []
+        for r in rows:
+            srcs = []
+            raw_s = r["sources"] if "sources" in r.keys() else None
+            if raw_s:
+                try: srcs = json.loads(raw_s) if raw_s.startswith("[") else [raw_s]
+                except Exception: srcs = [raw_s]
+            items.append({
+                "id": r["id"],
+                "question": r["question"],
+                "answer": r["answer"],
+                "topic": r["topic"],
+                "sources": srcs,
+                "created_at": r["created_at"]
+            })
+        return items
+    except Exception as ex:
+        app.logger.warning(f"Could not load chat history: {ex}")
+        return []
+
 @app.route("/chat/<course>")
 @student_required
 def chat(course):
     course_or_404(course)
+    s = current_student()
     courses = _all_courses()
     g_data = study_guide.get_guide(course)
     prompt = request.args.get("prompt", "").strip()
-    return render_template("chat.html", course=course, cfg=courses[course], topics=rag.topics(course), guide=g_data, initial_prompt=prompt)
+    history = _get_chat_history(s["id"], course)
+    return render_template(
+        "chat.html",
+        course=course,
+        cfg=courses[course],
+        topics=rag.topics(course),
+        guide=g_data,
+        initial_prompt=prompt,
+        initial_history=history
+    )
 
 @app.route("/api/chat/<course>", methods=["POST"])
 @student_required
@@ -478,11 +559,70 @@ def api_chat(course):
         app.logger.exception(e); return jsonify(error="The tutor is temporarily unavailable. Please try again."), 502
     if not intro:
         try:
-            db.x("INSERT INTO messages(student_pk,course,question,answer,topic,in_scope) VALUES(?,?,?,?,?,?)",
-                 (s["id"], course, text, r["answer"], r["topic"], r["in_scope"]))
-        except Exception as e:
-            app.logger.warning(f"Could not save chat message: {e}")
+            sources_val = json.dumps(r.get("sources") or [], ensure_ascii=False)
+            db.x("INSERT INTO messages(student_pk,course,question,answer,topic,in_scope,sources) VALUES(?,?,?,?,?,?,?)",
+                 (s["id"], course, text, r["answer"], r["topic"], r["in_scope"], sources_val))
+        except Exception:
+            try:
+                db.x("INSERT INTO messages(student_pk,course,question,answer,topic,in_scope) VALUES(?,?,?,?,?,?)",
+                     (s["id"], course, text, r["answer"], r["topic"], r["in_scope"]))
+            except Exception as e:
+                app.logger.warning(f"Could not save chat message: {e}")
     return jsonify(r)
+
+@app.route("/api/chat/<course>/history", methods=["GET"])
+@student_required
+def api_chat_history(course):
+    course_or_404(course)
+    s = current_student()
+    return jsonify(history=_get_chat_history(s["id"], course))
+
+@app.route("/api/chat/<course>/clear", methods=["POST"])
+@student_required
+def api_chat_clear(course):
+    course_or_404(course)
+    s = current_student()
+    try:
+        db.x("DELETE FROM messages WHERE student_pk=? AND course=?", (s["id"], course))
+    except Exception as ex:
+        app.logger.warning(f"Could not clear chat messages: {ex}")
+    return jsonify(ok=True)
+
+@app.route("/api/chat/<course>/sync", methods=["POST"])
+@student_required
+def api_chat_sync(course):
+    course_or_404(course)
+    s = current_student()
+    d = request.get_json(force=True, silent=True) or {}
+    messages = d.get("messages") or []
+    count = 0
+    if isinstance(messages, list):
+        for m in messages:
+            if not isinstance(m, dict):
+                continue
+            q_text = str(m.get("question") or "").strip()
+            a_text = str(m.get("answer") or "").strip()
+            if not q_text or not a_text:
+                continue
+            exists = db.q(
+                "SELECT 1 FROM messages WHERE student_pk=? AND course=? AND question=? LIMIT 1",
+                (s["id"], course, q_text),
+                one=True
+            )
+            if not exists:
+                srcs = m.get("sources") or []
+                srcs_val = json.dumps(srcs, ensure_ascii=False) if isinstance(srcs, list) else str(srcs)
+                topic_val = str(m.get("topic") or "General")
+                try:
+                    db.x(
+                        "INSERT INTO messages(student_pk,course,question,answer,topic,in_scope,sources) VALUES(?,?,?,?,?,?,?)",
+                        (s["id"], course, q_text, a_text, topic_val, 1, srcs_val)
+                    )
+                    count += 1
+                except Exception:
+                    pass
+    return jsonify(ok=True, synced=count)
+
 
 def _pick_topic(course, topic):
     tl = rag.topics(course)

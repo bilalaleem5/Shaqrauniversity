@@ -48,13 +48,47 @@ def pack_vault(accounts_dict):
         return ""
 
 def get_vault_from_request(req):
-    """Read vault token from Cookie, Form, or Header."""
-    token = req.cookies.get(VAULT_COOKIE_NAME)
-    if not token and req.form:
-        token = req.form.get("client_vault")
-    if not token:
-        token = req.headers.get("X-Client-Vault")
-    return unpack_vault(token)
+    """Read vault tokens from Cookie, Form, Header, and JSON body, merging all valid accounts."""
+    if not req:
+        return {}
+    accounts = {}
+    tokens = []
+
+    # 1. Cookie
+    c_token = req.cookies.get(VAULT_COOKIE_NAME)
+    if c_token:
+        tokens.append(c_token)
+
+    # 2. Form field
+    if req.form:
+        f_token = req.form.get("client_vault")
+        if f_token:
+            tokens.append(f_token)
+
+    # 3. Request Header
+    h_token = req.headers.get("X-Client-Vault")
+    if h_token:
+        tokens.append(h_token)
+
+    # 4. JSON body if applicable
+    if req.is_json:
+        try:
+            j = req.get_json(silent=True) or {}
+            j_token = j.get("client_vault")
+            if j_token:
+                tokens.append(j_token)
+        except Exception:
+            pass
+
+    for t in tokens:
+        unpacked = unpack_vault(t)
+        if isinstance(unpacked, dict):
+            for k, v in unpacked.items():
+                if isinstance(v, dict):
+                    accounts[str(k).lower().strip()] = v
+
+    return accounts
+
 
 def add_student_to_vault(req, student_data):
     """Add or update student in the device vault and return a new signed token."""

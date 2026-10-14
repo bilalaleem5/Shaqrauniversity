@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS messages(
   answer TEXT,
   topic TEXT,
   in_scope INTEGER DEFAULT 1,
+  sources TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS quiz(
@@ -105,6 +106,7 @@ MIGRATE = {
     "students": [("email", "TEXT"), ("status", "TEXT DEFAULT 'active'"), ("login_count", "INTEGER DEFAULT 0"), ("last_login", "TEXT")],
     "quiz": [("qtype", "TEXT DEFAULT 'mcq'"), ("model_answer", "TEXT"), ("student_answer", "TEXT"), ("score", "REAL"), ("feedback", "TEXT")],
     "teachers": [("is_admin", "INTEGER DEFAULT 0")],
+    "messages": [("sources", "TEXT")],
 }
 
 def conn():

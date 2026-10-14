@@ -134,15 +134,29 @@
 
 <script>
 (function() {
+  function syncVault() {
+    try {
+      const val = localStorage.getItem('_su_v');
+      const inp = document.getElementById('client_vault');
+      if (inp && val) inp.value = val;
+    } catch(e) {}
+  }
+
+  syncVault();
+
+  {% if session.get('vault_token') %}
   try {
-    const val = localStorage.getItem('_su_v');
-    const inp = document.getElementById('client_vault');
-    if (inp && val) inp.value = val;
-    {% if session.get('vault_token') %}
     localStorage.setItem('_su_v', {{ session.get('vault_token')|tojson }});
-    if (inp) inp.value = {{ session.get('vault_token')|tojson }};
-    {% endif %}
+    syncVault();
   } catch(e) {}
+  {% endif %}
+
+  const form = document.getElementById('authForm');
+  if (form) {
+    form.addEventListener('submit', function() {
+      syncVault();
+    });
+  }
 })();
 </script>
 {% endblock %}

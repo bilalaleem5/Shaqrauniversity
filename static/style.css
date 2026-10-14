@@ -4163,4 +4163,30 @@ textarea.big {
   }
 }
 
+.history-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 16px 0;
+  color: var(--text-muted, #64748b);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.history-divider::before, .history-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px dashed var(--border, #e2e8f0);
+}
+
+.history-divider span {
+  padding: 2px 12px;
+  background: var(--card, #ffffff);
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle, #edf2f7);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
 
