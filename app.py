@@ -255,7 +255,7 @@ def start_student_session(s, resp=None):
             account_store.VAULT_COOKIE_NAME,
             new_vault_token,
             max_age=account_store.VAULT_COOKIE_MAX_AGE,
-            httponly=False,
+            httponly=True,
             samesite="Lax",
             secure=is_https
         )
@@ -715,7 +715,7 @@ def student_feedback():
             flash("Please write at least a few words.", "err")
         else:
             db.x("INSERT INTO feedback(student_pk,course,category,message) VALUES(?,?,?,?)",
-                 (current_student()["id"], course if course in _all_courses() else "", category, msg))
+                 (None, course if course in _all_courses() else "", category, msg))
             flash("Thank you! Your anonymous feedback has been submitted to your instructor.", "ok")
             return redirect(url_for("student_feedback"))
     return render_template("feedback.html")
@@ -972,8 +972,12 @@ def knowledge_delete():
     fpath = os.path.join(folder, secure_filename(fname))
     if os.path.isfile(fpath):
         os.remove(fpath)
-        try: rag.build_chunks(c)
-        except Exception: pass
+        try:
+            rag.build_chunks(c)
+            if rag._have_llm() and not os.environ.get("NO_EMBED_THREAD"):
+                threading.Thread(target=_rebuild_embeddings, args=(c,), daemon=True).start()
+        except Exception:
+            pass
         flash(f"Deleted {fname} and rebuilt index.", "ok")
     else:
         flash("File not found.", "err")

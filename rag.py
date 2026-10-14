@@ -11,7 +11,7 @@ _client = None
 # ---------------------------------------------------------------- helpers
 def topic_name(path):
     n = os.path.splitext(os.path.basename(path))[0]
-    n = re.sub(r"\s*\(\d+\)\s*", " ", n)      # drop "(1)", "(6)" copy suffixes
+    n = re.sub(r"\s*\((\d+)\)\s*", r" \1 ", n)      # convert "Tutorial (1)" -> "Tutorial 1"
     return re.sub(r"\s+", " ", n).strip(" .")
 
 def _norm(t):
@@ -49,12 +49,34 @@ def _split(text, size=1000, overlap=150):
     return out
 
 # ---------------------------------------------------------------- ingestion
+def get_course_config(course):
+    """Retrieve course configuration supporting both built-in and dynamic courses."""
+    try:
+        all_c = config.get_all_courses()
+        if course in all_c:
+            return all_c[course]
+    except Exception:
+        pass
+    if course in config.COURSES:
+        return config.COURSES[course]
+    folder = os.path.join(config.KNOWLEDGE_DIR, course)
+    os.makedirs(folder, exist_ok=True)
+    return {
+        "title": course.replace("_", " ").title(),
+        "code": course.upper(),
+        "program": "Shaqra University",
+        "folder": folder,
+        "intro_query": "course description objectives learning outcomes course content topics",
+        "style": f"You are the AI teaching assistant for {course.replace('_', ' ').title()}. Teach at student level.",
+        "builtin": False
+    }
+
 def paths(course):
     d = os.path.join(config.DATA_DIR, f"index_{course}")
     return d + ".json", d + ".npy"
 
 def build_chunks(course):
-    folder = config.COURSES[course]["folder"]
+    folder = get_course_config(course)["folder"]
     chunks = []
     for f in sorted(glob.glob(os.path.join(folder, "*"))):
         if not f.lower().endswith((".pdf", ".docx", ".xlsx", ".xlsm", ".txt", ".md")): continue
@@ -151,7 +173,7 @@ OOS = "[[OUT_OF_SCOPE]]"
 
 def answer(course, question, history=None, intro=False):
     """Returns dict(answer, topic, in_scope, sources)."""
-    cfg = config.COURSES[course]
+    cfg = get_course_config(course)
     query = cfg["intro_query"] if intro else question
     ctx = retrieve(course, query, k=6 if intro else 5)
     topic = ctx[0]["topic"] if ctx else None
@@ -199,7 +221,7 @@ def make_question(course, topic, avoid=()):
         opts = ["True", "False", "Cannot be determined", "None of the above"]
         return dict(question=f"[Demo] Based on {topic}: is this statement supported? \"{t}...\"",
                     options=opts, correct_idx=0, explanation="Demo mode explanation.", topic=topic)
-    cfg = config.COURSES[course]
+    cfg = get_course_config(course)
     prompt = (
         f"Create ONE multiple-choice question for a PharmD student on the topic '{topic}' of the course "
         f"{cfg['title']}, based ONLY on the material below. 4 options, exactly one correct, plausible distractors, "
@@ -223,7 +245,7 @@ def recommendations(course, stats):
         weak = ", ".join(t["topic"] for t in stats["weak_topics"][:3]) or "none yet"
         return ("[Demo mode, no OpenAI key]\n1. Review the weakest topics: " + weak +
                 ".\n2. Add worked examples and short practice sets for them.\n3. Add a recap quiz at the start of each lecture.")
-    cfg = config.COURSES[course]
+    cfg = get_course_config(course)
     prompt = (
         f"You advise the instructor of {cfg['title']} ({cfg['code']}). Below is anonymised analytics from the AI tutor "
         "used by students. Write practical recommendations to improve the course: (1) what to re-teach or clarify, "
@@ -256,7 +278,7 @@ def make_theory(course, topic, avoid=()):
         t = re.sub(r"\s+", " ", ctx[0]["text"])[:300]
         return dict(question=f"[Demo] Explain the main idea of this part of {topic} in your own words.",
                     model_answer=t, topic=topic)
-    cfg = config.COURSES[course]
+    cfg = get_course_config(course)
     prompt = (f"Create ONE short-answer (theory) question for a PharmD student on the topic '{topic}' of the course "
               f"{cfg['title']}, based ONLY on the material below. It must be answerable in 3-6 sentences without images. "
               'Respond as JSON: {"question": str, "model_answer": "a complete model answer of 3-6 sentences"}.\n'
@@ -287,7 +309,7 @@ def grade_theory(question, model_answer, student_answer):
 
 def make_bank(course, topic_list, kind, n):
     """Teacher question sheet: kind 'mcq' or 'theory'. Returns list of dicts with answers."""
-    cfg = config.COURSES[course]
+    cfg = get_course_config(course)
     ctx = []
     for t in topic_list: ctx += _sample_ctx(course, t, 2)
     random.shuffle(ctx); ctx = ctx[:10]
@@ -324,7 +346,8 @@ def make_bank(course, topic_list, kind, n):
 def ensure_embeddings():
     """Build missing embeddings once (safe to call from several processes)."""
     if not _have_llm(): return
-    for course in config.COURSES:
+    courses = config.get_all_courses() if hasattr(config, "get_all_courses") else config.COURSES
+    for course in courses:
         jp, np_ = paths(course)
         if os.path.exists(np_): continue
         lock = np_ + ".lock"

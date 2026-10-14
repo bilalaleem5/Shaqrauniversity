@@ -31,7 +31,8 @@ def _bars(topics):
     return d
 
 def build(stats, recommendation):
-    cfg = config.COURSES[stats["course"]]
+    all_c = config.get_all_courses() if hasattr(config, "get_all_courses") else config.COURSES
+    cfg = all_c.get(stats["course"]) or config.COURSES.get(stats["course"], {"title": stats["course"].title(), "code": stats["course"].upper()})
     buf = io.BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=2*cm, rightMargin=2*cm, topMargin=1.8*cm, bottomMargin=1.8*cm,
                             title=f"{cfg['title']} - Learning Analytics Report")

@@ -1,4 +1,6 @@
 import sys, os, json
+os.environ.pop("DATABASE_URL", None)
+os.environ.pop("POSTGRES_URL", None)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import app, db, account_store
 from werkzeug.security import check_password_hash

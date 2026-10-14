@@ -17,13 +17,16 @@ __pycache__/
 *.so
 .pytest_cache/
 
-# SQLite temporary locks & journals (keep data/tutor.db tracked)
+# SQLite databases & journals
+*.db
 *.db-shm
 *.db-wal
 *.db-journal
+data/*.db
 data/*.db-shm
 data/*.db-wal
 data/*.db-journal
+
 
 # IDE & Editor files
 .vscode/

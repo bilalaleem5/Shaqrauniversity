@@ -1,6 +1,8 @@
 """End-to-end test with a FAKE OpenAI client (no network). Run: python tests/test_all.py"""
 import os, sys, json, re, tempfile, shutil, hashlib
 tmp = tempfile.mkdtemp()
+os.environ.pop("DATABASE_URL", None)
+os.environ.pop("POSTGRES_URL", None)
 os.environ.update(DATA_DIR=tmp, OPENAI_API_KEY="test-key", NO_EMBED_THREAD="1", SECRET_KEY="t")
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np, rag, config
